@@ -159,6 +159,14 @@ export default function App() {
   const [selectedBill, setSelectedBill] = useState<Bill | null>(null);
   const [paymentMethod, setPaymentMethod] = useState('UPI');
 
+  const [isAddStationModalOpen, setIsAddStationModalOpen] = useState(false);
+  const [stationForm, setStationForm] = useState({ name: '', type: 'PC' as StationType, ratePerHour: 80 });
+  const [editingStationId, setEditingStationId] = useState<string | null>(null);
+
+  const [isAddNewSnackModalOpen, setIsAddNewSnackModalOpen] = useState(false);
+  const [newSnackForm, setNewSnackForm] = useState({ name: '', price: 50, emoji: '🥤', category: 'Beverage' });
+  const [editingSnackId, setEditingSnackId] = useState<string | null>(null);
+
   // Live timer update
   useEffect(() => {
     const interval = setInterval(() => setNow(Date.now()), 1000);
@@ -166,6 +174,83 @@ export default function App() {
   }, []);
 
   // --- Actions ---
+  const handleAddStation = () => {
+    if (!stationForm.name) return;
+    
+    if (editingStationId) {
+      setStations(stations.map(s => s.id === editingStationId ? {
+        ...s,
+        name: stationForm.name,
+        type: stationForm.type,
+        ratePerHour: stationForm.ratePerHour
+      } : s));
+    } else {
+      const newStation: Station = {
+        id: `st_${Date.now()}`,
+        name: stationForm.name,
+        type: stationForm.type,
+        status: 'Available',
+        ratePerHour: stationForm.ratePerHour
+      };
+      setStations([...stations, newStation]);
+    }
+    
+    setIsAddStationModalOpen(false);
+    setEditingStationId(null);
+    setStationForm({ name: '', type: 'PC', ratePerHour: 80 });
+  };
+
+  const handleEditStationClick = (station: Station, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setStationForm({ name: station.name, type: station.type, ratePerHour: station.ratePerHour });
+    setEditingStationId(station.id);
+    setIsAddStationModalOpen(true);
+  };
+
+  const handleRemoveStation = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setStations(stations.filter(s => s.id !== id));
+  };
+
+  const handleAddNewSnack = () => {
+    if (!newSnackForm.name) return;
+    
+    if (editingSnackId) {
+      setSnacks(snacks.map(s => s.id === editingSnackId ? {
+        ...s,
+        name: newSnackForm.name,
+        price: newSnackForm.price,
+        category: newSnackForm.category,
+        emoji: newSnackForm.emoji
+      } : s));
+    } else {
+      const newSnack: Snack = {
+        id: `snk_${Date.now()}`,
+        name: newSnackForm.name,
+        price: newSnackForm.price,
+        category: newSnackForm.category,
+        emoji: newSnackForm.emoji
+      };
+      setSnacks([...snacks, newSnack]);
+    }
+    
+    setIsAddNewSnackModalOpen(false);
+    setEditingSnackId(null);
+    setNewSnackForm({ name: '', price: 50, emoji: '🥤', category: 'Beverage' });
+  };
+
+  const handleEditSnackClick = (snack: Snack, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setNewSnackForm({ name: snack.name, price: snack.price, emoji: snack.emoji, category: snack.category });
+    setEditingSnackId(snack.id);
+    setIsAddNewSnackModalOpen(true);
+  };
+
+  const handleRemoveSnack = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSnacks(snacks.filter(s => s.id !== id));
+  };
+
   const handleStartSession = () => {
     if (!selectedStation) return;
     const newSession: Session = {
@@ -478,9 +563,15 @@ export default function App() {
     <div className="space-y-6">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-3xl font-orbitron neon-text-magenta">GAMING GRID</h2>
-        <div className="flex gap-4 text-sm">
+        <div className="flex gap-4 text-sm items-center">
           <span className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-green-500 neon-bg-cyan"></div> Available</span>
           <span className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-red-500 neon-bg-magenta"></div> Occupied</span>
+          <button 
+            onClick={() => setIsAddStationModalOpen(true)}
+            className="ml-4 px-4 py-2 bg-[var(--color-cyber-cyan)]/20 text-[var(--color-cyber-cyan)] border border-[var(--color-cyber-cyan)] rounded hover:bg-[var(--color-cyber-cyan)]/40 transition-colors flex items-center gap-2 font-orbitron text-sm uppercase"
+          >
+            <Plus className="w-4 h-4" /> Add Station
+          </button>
         </div>
       </div>
 
@@ -509,8 +600,28 @@ export default function App() {
                   <h3 className="text-xl font-orbitron font-bold text-white">{station.name}</h3>
                   <p className="text-gray-400 text-sm">{station.type} • ₹{station.ratePerHour}/hr</p>
                 </div>
-                {station.type === 'PC' ? <Monitor className={`w-6 h-6 ${isOccupied ? 'text-[var(--color-cyber-magenta)]' : 'text-[var(--color-cyber-cyan)]'}`} /> : 
-                 <Gamepad2 className={`w-6 h-6 ${isOccupied ? 'text-[var(--color-cyber-magenta)]' : 'text-[var(--color-cyber-cyan)]'}`} />}
+                <div className="flex flex-col items-end gap-2">
+                  {station.type === 'PC' ? <Monitor className={`w-6 h-6 ${isOccupied ? 'text-[var(--color-cyber-magenta)]' : 'text-[var(--color-cyber-cyan)]'}`} /> : 
+                   <Gamepad2 className={`w-6 h-6 ${isOccupied ? 'text-[var(--color-cyber-magenta)]' : 'text-[var(--color-cyber-cyan)]'}`} />}
+                  {!isOccupied && (
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={(e) => handleEditStationClick(station, e)}
+                        className="text-gray-500 hover:text-[var(--color-cyber-cyan)] transition-colors"
+                        title="Edit Station"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button 
+                        onClick={(e) => handleRemoveStation(station.id, e)}
+                        className="text-gray-500 hover:text-red-500 transition-colors"
+                        title="Remove Station"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {isOccupied && session ? (
@@ -659,11 +770,33 @@ export default function App() {
     <div className="space-y-6">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-3xl font-orbitron neon-text-cyan">CYBER CAFE MENU</h2>
+        <button 
+          onClick={() => setIsAddNewSnackModalOpen(true)}
+          className="px-4 py-2 bg-[var(--color-cyber-cyan)]/20 text-[var(--color-cyber-cyan)] border border-[var(--color-cyber-cyan)] rounded hover:bg-[var(--color-cyber-cyan)]/40 transition-colors flex items-center gap-2 font-orbitron text-sm uppercase"
+        >
+          <Plus className="w-4 h-4" /> Add Item
+        </button>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
         {snacks.map(snack => (
-          <div key={snack.id} className="bg-[var(--color-cyber-card)] border border-gray-800 hover:border-[var(--color-cyber-cyan)] rounded-lg p-4 transition-all group">
+          <div key={snack.id} className="relative bg-[var(--color-cyber-card)] border border-gray-800 hover:border-[var(--color-cyber-cyan)] rounded-lg p-4 transition-all group">
+            <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button 
+                onClick={(e) => handleEditSnackClick(snack, e)}
+                className="text-gray-600 hover:text-[var(--color-cyber-cyan)]"
+                title="Edit Item"
+              >
+                <Edit className="w-4 h-4" />
+              </button>
+              <button 
+                onClick={(e) => handleRemoveSnack(snack.id, e)}
+                className="text-gray-600 hover:text-red-500"
+                title="Remove Item"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
             <div className="text-4xl mb-3 text-center group-hover:scale-110 transition-transform">{snack.emoji}</div>
             <h3 className="text-lg font-bold text-white text-center truncate">{snack.name}</h3>
             <p className="text-[var(--color-cyber-cyan)] text-center font-mono mb-4">₹{snack.price}</p>
@@ -671,7 +804,7 @@ export default function App() {
               onClick={() => { setSelectedSnack(snack); setSnackForm({ billId: '', quantity: 1 }); setIsAddSnackModalOpen(true); }}
               className="w-full py-1.5 bg-gray-800 hover:bg-[var(--color-cyber-cyan)] hover:text-black text-white rounded text-sm transition-colors flex items-center justify-center gap-1"
             >
-              <Plus className="w-4 h-4" /> Add
+              <Plus className="w-4 h-4" /> Add to Bill
             </button>
           </div>
         ))}
@@ -1076,6 +1209,111 @@ export default function App() {
                 <button onClick={() => setIsPayBillModalOpen(false)} className="flex-1 py-2 bg-gray-800 text-white rounded hover:bg-gray-700 transition-colors">Cancel</button>
                 <button onClick={handlePayBill} className="flex-1 py-2 bg-[var(--color-cyber-amber)]/20 text-[var(--color-cyber-amber)] border border-[var(--color-cyber-amber)] rounded hover:bg-[var(--color-cyber-amber)] hover:text-black transition-colors font-bold uppercase flex items-center justify-center gap-2">
                   <CheckCircle className="w-4 h-4" /> Confirm Payment
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {isAddStationModalOpen && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[var(--color-cyber-dark)] border border-[var(--color-cyber-cyan)] neon-border-cyan rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-2xl font-orbitron text-[var(--color-cyber-cyan)] mb-4 uppercase">{editingStationId ? 'Edit Station' : 'Add New Station'}</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-gray-400 text-sm mb-1">Station Name</label>
+                <input 
+                  type="text" 
+                  value={stationForm.name}
+                  onChange={e => setStationForm({...stationForm, name: e.target.value})}
+                  className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:border-[var(--color-cyber-cyan)] focus:neon-border-cyan transition-all"
+                  placeholder="e.g. PC-11"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-400 text-sm mb-1">Station Type</label>
+                <select 
+                  value={stationForm.type}
+                  onChange={e => setStationForm({...stationForm, type: e.target.value as StationType})}
+                  className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:border-[var(--color-cyber-cyan)] focus:neon-border-cyan transition-all"
+                >
+                  <option value="PC">PC</option>
+                  <option value="PS5">PS5</option>
+                  <option value="Xbox">Xbox</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-gray-400 text-sm mb-1">Rate Per Hour (₹)</label>
+                <input 
+                  type="number" 
+                  value={stationForm.ratePerHour}
+                  onChange={e => setStationForm({...stationForm, ratePerHour: Number(e.target.value)})}
+                  className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:border-[var(--color-cyber-cyan)] focus:neon-border-cyan transition-all"
+                />
+              </div>
+              
+              <div className="flex gap-3 mt-8">
+                <button onClick={() => { setIsAddStationModalOpen(false); setEditingStationId(null); setStationForm({ name: '', type: 'PC', ratePerHour: 80 }); }} className="flex-1 py-2 bg-gray-800 text-white rounded hover:bg-gray-700 transition-colors">Cancel</button>
+                <button onClick={handleAddStation} className="flex-1 py-2 bg-[var(--color-cyber-cyan)]/20 text-[var(--color-cyber-cyan)] border border-[var(--color-cyber-cyan)] rounded hover:bg-[var(--color-cyber-cyan)] hover:text-black transition-colors font-bold uppercase flex items-center justify-center gap-2">
+                  {editingStationId ? <CheckCircle className="w-4 h-4" /> : <Plus className="w-4 h-4" />} {editingStationId ? 'Save Changes' : 'Add Station'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {isAddNewSnackModalOpen && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[var(--color-cyber-dark)] border border-[var(--color-cyber-cyan)] neon-border-cyan rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-2xl font-orbitron text-[var(--color-cyber-cyan)] mb-4 uppercase">{editingSnackId ? 'Edit Menu Item' : 'Add Menu Item'}</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-gray-400 text-sm mb-1">Item Name</label>
+                <input 
+                  type="text" 
+                  value={newSnackForm.name}
+                  onChange={e => setNewSnackForm({...newSnackForm, name: e.target.value})}
+                  className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:border-[var(--color-cyber-cyan)] focus:neon-border-cyan transition-all"
+                  placeholder="e.g. Energy Drink"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-400 text-sm mb-1">Price (₹)</label>
+                <input 
+                  type="number" 
+                  value={newSnackForm.price}
+                  onChange={e => setNewSnackForm({...newSnackForm, price: Number(e.target.value)})}
+                  className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:border-[var(--color-cyber-cyan)] focus:neon-border-cyan transition-all"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-400 text-sm mb-1">Category</label>
+                <select 
+                  value={newSnackForm.category}
+                  onChange={e => setNewSnackForm({...newSnackForm, category: e.target.value})}
+                  className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:border-[var(--color-cyber-cyan)] focus:neon-border-cyan transition-all"
+                >
+                  <option value="Beverage">Beverage</option>
+                  <option value="Food">Food</option>
+                  <option value="Snack">Snack</option>
+                  <option value="Dessert">Dessert</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-gray-400 text-sm mb-1">Emoji Icon</label>
+                <input 
+                  type="text" 
+                  value={newSnackForm.emoji}
+                  onChange={e => setNewSnackForm({...newSnackForm, emoji: e.target.value})}
+                  className="w-full bg-gray-900 border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:border-[var(--color-cyber-cyan)] focus:neon-border-cyan transition-all text-2xl"
+                  placeholder="🥤"
+                />
+              </div>
+              
+              <div className="flex gap-3 mt-8">
+                <button onClick={() => { setIsAddNewSnackModalOpen(false); setEditingSnackId(null); setNewSnackForm({ name: '', price: 50, emoji: '🥤', category: 'Beverage' }); }} className="flex-1 py-2 bg-gray-800 text-white rounded hover:bg-gray-700 transition-colors">Cancel</button>
+                <button onClick={handleAddNewSnack} className="flex-1 py-2 bg-[var(--color-cyber-cyan)]/20 text-[var(--color-cyber-cyan)] border border-[var(--color-cyber-cyan)] rounded hover:bg-[var(--color-cyber-cyan)] hover:text-black transition-colors font-bold uppercase flex items-center justify-center gap-2">
+                  {editingSnackId ? <CheckCircle className="w-4 h-4" /> : <Plus className="w-4 h-4" />} {editingSnackId ? 'Save Changes' : 'Add Item'}
                 </button>
               </div>
             </div>
