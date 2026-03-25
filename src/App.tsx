@@ -905,7 +905,7 @@ export default function App() {
       transactions.forEach(t => db.run("INSERT INTO transactions VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [t.id, t.date, t.customerName, t.stationName, t.durationMinutes, t.gamingTotal, t.snacksTotal, t.discount, t.grandTotal, t.paymentMethod]));
 
       const data = db.export();
-      const blob = new Blob([data], { type: 'application/x-sqlite3' });
+      const blob = new Blob([data as any], { type: 'application/x-sqlite3' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
