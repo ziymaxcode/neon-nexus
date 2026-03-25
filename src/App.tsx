@@ -97,16 +97,9 @@ const initialSnacks: Snack[] = [
   { id: 's8', name: 'Pizza Slice', price: 150, category: 'Food', emoji: '🍕' },
 ];
 
-const initialMembers: Member[] = [
-  { id: 'm1', name: 'Alex Chen', phone: '9876543210', email: 'alex@neon.com', plan: 'Gold', joinDate: '2026-01-15', expiryDate: '2026-12-31', totalVisits: 42, status: 'Active' },
-  { id: 'm2', name: 'Sarah Jones', phone: '9876543211', email: 'sarah@neon.com', plan: 'Silver', joinDate: '2026-02-01', expiryDate: '2026-08-01', totalVisits: 15, status: 'Active' },
-  { id: 'm3', name: 'Mike Ross', phone: '9876543212', email: 'mike@neon.com', plan: 'Basic', joinDate: '2025-10-10', expiryDate: '2025-11-10', totalVisits: 5, status: 'Expired' },
-];
+const initialMembers: Member[] = [];
 
-const initialTransactions: Transaction[] = [
-  { id: 't1', date: Date.now() - 86400000, customerName: 'Alex Chen', stationName: 'PC-01', durationMinutes: 120, gamingTotal: 160, snacksTotal: 219, discount: 48, grandTotal: 347.55, paymentMethod: 'UPI' },
-  { id: 't2', date: Date.now() - 43200000, customerName: 'Guest_101', stationName: 'PS5-02', durationMinutes: 60, gamingTotal: 150, snacksTotal: 0, discount: 0, grandTotal: 157.5, paymentMethod: 'Cash' },
-];
+const initialTransactions: Transaction[] = [];
 
 // --- Helper Functions ---
 const loadState = <T,>(key: string, fallback: T): T => {
@@ -134,21 +127,21 @@ const calculateCost = (startTime: number, ratePerHour: number) => {
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [stations, setStations] = useState<Station[]>(() => loadState('neon_nexus_stations', initialStations));
-  const [sessions, setSessions] = useState<Session[]>(() => loadState('neon_nexus_sessions', []));
-  const [snacks, setSnacks] = useState<Snack[]>(() => loadState('neon_nexus_snacks', initialSnacks));
-  const [members, setMembers] = useState<Member[]>(() => loadState('neon_nexus_members', initialMembers));
-  const [bills, setBills] = useState<Bill[]>(() => loadState('neon_nexus_bills', []));
-  const [transactions, setTransactions] = useState<Transaction[]>(() => loadState('neon_nexus_transactions', initialTransactions));
+  const [stations, setStations] = useState<Station[]>(() => loadState('neon_nexus_stations_v2', initialStations));
+  const [sessions, setSessions] = useState<Session[]>(() => loadState('neon_nexus_sessions_v2', []));
+  const [snacks, setSnacks] = useState<Snack[]>(() => loadState('neon_nexus_snacks_v2', initialSnacks));
+  const [members, setMembers] = useState<Member[]>(() => loadState('neon_nexus_members_v2', initialMembers));
+  const [bills, setBills] = useState<Bill[]>(() => loadState('neon_nexus_bills_v2', []));
+  const [transactions, setTransactions] = useState<Transaction[]>(() => loadState('neon_nexus_transactions_v2', initialTransactions));
   const [now, setNow] = useState(Date.now());
 
   // Save state to localStorage whenever it changes
-  useEffect(() => { localStorage.setItem('neon_nexus_stations', JSON.stringify(stations)); }, [stations]);
-  useEffect(() => { localStorage.setItem('neon_nexus_sessions', JSON.stringify(sessions)); }, [sessions]);
-  useEffect(() => { localStorage.setItem('neon_nexus_snacks', JSON.stringify(snacks)); }, [snacks]);
-  useEffect(() => { localStorage.setItem('neon_nexus_members', JSON.stringify(members)); }, [members]);
-  useEffect(() => { localStorage.setItem('neon_nexus_bills', JSON.stringify(bills)); }, [bills]);
-  useEffect(() => { localStorage.setItem('neon_nexus_transactions', JSON.stringify(transactions)); }, [transactions]);
+  useEffect(() => { localStorage.setItem('neon_nexus_stations_v2', JSON.stringify(stations)); }, [stations]);
+  useEffect(() => { localStorage.setItem('neon_nexus_sessions_v2', JSON.stringify(sessions)); }, [sessions]);
+  useEffect(() => { localStorage.setItem('neon_nexus_snacks_v2', JSON.stringify(snacks)); }, [snacks]);
+  useEffect(() => { localStorage.setItem('neon_nexus_members_v2', JSON.stringify(members)); }, [members]);
+  useEffect(() => { localStorage.setItem('neon_nexus_bills_v2', JSON.stringify(bills)); }, [bills]);
+  useEffect(() => { localStorage.setItem('neon_nexus_transactions_v2', JSON.stringify(transactions)); }, [transactions]);
 
   // Modals state
   const [isStartSessionModalOpen, setIsStartSessionModalOpen] = useState(false);
