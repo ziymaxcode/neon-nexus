@@ -1,0 +1,6 @@
+{
+	"appId": "com.cybercafe.manager",
+	"appName": "Cyber Cafe Manager",
+	"webDir": "dist",
+	"bundledWebRuntime": false
+}

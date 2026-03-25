@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import initSqlJs from 'sql.js';
 import { 
   Monitor, Gamepad2, Receipt, Coffee, Users, History, 
   Play, Square, Plus, Trash2, Edit, Printer, CheckCircle, 
-  Clock, DollarSign, Activity, Zap
+  Clock, DollarSign, Activity, Zap, Database, Download, Upload
 } from 'lucide-react';
 
 // --- Types ---
@@ -491,11 +492,13 @@ export default function App() {
       .filter(t => new Date(t.date).toDateString() === new Date().toDateString())
       .reduce((sum, t) => sum + t.grandTotal, 0);
 
+    const totalRevenue = transactions.reduce((sum, t) => sum + t.grandTotal, 0);
+
     return (
       <div className="space-y-6">
         <h2 className="text-3xl font-orbitron neon-text-cyan mb-6">SYSTEM DASHBOARD</h2>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div className="bg-[var(--color-cyber-card)] border border-[var(--color-cyber-cyan)] p-6 rounded-lg neon-border-cyan">
             <div className="flex items-center justify-between">
               <div>
@@ -513,6 +516,16 @@ export default function App() {
                 <h3 className="text-4xl font-orbitron text-white mt-2">₹{todayRevenue.toFixed(0)}</h3>
               </div>
               <DollarSign className="w-12 h-12 text-[var(--color-cyber-magenta)] opacity-80" />
+            </div>
+          </div>
+
+          <div className="bg-[var(--color-cyber-card)] border border-[#00ff00] p-6 rounded-lg shadow-[0_0_10px_rgba(0,255,0,0.2)]">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-400 text-sm uppercase tracking-wider">Total Revenue</p>
+                <h3 className="text-4xl font-orbitron text-white mt-2">₹{totalRevenue.toFixed(0)}</h3>
+              </div>
+              <DollarSign className="w-12 h-12 text-[#00ff00] opacity-80" />
             </div>
           </div>
           
@@ -868,6 +881,149 @@ export default function App() {
     </div>
   );
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const exportToSQLite = async () => {
+    try {
+      const SQL = await initSqlJs({
+        locateFile: file => `https://sql.js.org/dist/${file}`
+      });
+      const db = new SQL.Database();
+      
+      db.run("CREATE TABLE stations (id TEXT, name TEXT, type TEXT, status TEXT, ratePerHour REAL);");
+      db.run("CREATE TABLE sessions (id TEXT, stationId TEXT, customerName TEXT, memberId TEXT, startTime REAL, ratePerHour REAL);");
+      db.run("CREATE TABLE snacks (id TEXT, name TEXT, price REAL, category TEXT, emoji TEXT);");
+      db.run("CREATE TABLE members (id TEXT, name TEXT, phone TEXT, email TEXT, plan TEXT, joinDate TEXT, expiryDate TEXT, totalVisits INTEGER, status TEXT);");
+      db.run("CREATE TABLE bills (id TEXT, sessionId TEXT, customerName TEXT, memberId TEXT, stationName TEXT, durationMinutes REAL, gamingCharge REAL, snacks TEXT, status TEXT, createdAt REAL);");
+      db.run("CREATE TABLE transactions (id TEXT, date REAL, customerName TEXT, stationName TEXT, durationMinutes REAL, gamingTotal REAL, snacksTotal REAL, discount REAL, grandTotal REAL, paymentMethod TEXT);");
+
+      stations.forEach(s => db.run("INSERT INTO stations VALUES (?, ?, ?, ?, ?)", [s.id, s.name, s.type, s.status, s.ratePerHour]));
+      sessions.forEach(s => db.run("INSERT INTO sessions VALUES (?, ?, ?, ?, ?, ?)", [s.id, s.stationId, s.customerName, s.memberId || null, s.startTime, s.ratePerHour]));
+      snacks.forEach(s => db.run("INSERT INTO snacks VALUES (?, ?, ?, ?, ?)", [s.id, s.name, s.price, s.category, s.emoji]));
+      members.forEach(m => db.run("INSERT INTO members VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", [m.id, m.name, m.phone, m.email, m.plan, m.joinDate, m.expiryDate, m.totalVisits, m.status]));
+      bills.forEach(b => db.run("INSERT INTO bills VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [b.id, b.sessionId || null, b.customerName, b.memberId || null, b.stationName || null, b.durationMinutes || 0, b.gamingCharge, JSON.stringify(b.snacks), b.status, b.createdAt]));
+      transactions.forEach(t => db.run("INSERT INTO transactions VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [t.id, t.date, t.customerName, t.stationName, t.durationMinutes, t.gamingTotal, t.snacksTotal, t.discount, t.grandTotal, t.paymentMethod]));
+
+      const data = db.export();
+      const blob = new Blob([data], { type: 'application/x-sqlite3' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `cyber_cafe_backup_${new Date().toISOString().split('T')[0]}.sqlite`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Export failed", error);
+      alert("Failed to export database.");
+    }
+  };
+
+  const importFromSQLite = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const SQL = await initSqlJs({
+        locateFile: file => `https://sql.js.org/dist/${file}`
+      });
+      const db = new SQL.Database(new Uint8Array(arrayBuffer));
+
+      const extractTable = (tableName: string) => {
+        try {
+          const res = db.exec(`SELECT * FROM ${tableName}`);
+          if (res.length === 0) return [];
+          const cols = res[0].columns;
+          return res[0].values.map(row => {
+            const obj: any = {};
+            cols.forEach((col, i) => obj[col] = row[i]);
+            return obj;
+          });
+        } catch (e) {
+          return [];
+        }
+      };
+
+      const newStations = extractTable('stations');
+      if (newStations.length > 0) setStations(newStations as Station[]);
+
+      const newSessions = extractTable('sessions');
+      if (newSessions.length > 0) setSessions(newSessions as Session[]);
+
+      const newSnacks = extractTable('snacks');
+      if (newSnacks.length > 0) setSnacks(newSnacks as Snack[]);
+
+      const newMembers = extractTable('members');
+      if (newMembers.length > 0) setMembers(newMembers as Member[]);
+
+      const newBills = extractTable('bills');
+      if (newBills.length > 0) {
+        setBills(newBills.map((b: any) => ({
+          ...b,
+          snacks: typeof b.snacks === 'string' ? JSON.parse(b.snacks) : b.snacks
+        })) as Bill[]);
+      }
+
+      const newTransactions = extractTable('transactions');
+      if (newTransactions.length > 0) setTransactions(newTransactions as Transaction[]);
+
+      alert("Data successfully imported from SQLite backup!");
+    } catch (error) {
+      console.error("Import failed", error);
+      alert("Failed to import database. Make sure it's a valid SQLite backup file.");
+    }
+    
+    // Reset input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const renderSettings = () => (
+    <div className="space-y-6 max-w-2xl">
+      <h2 className="text-3xl font-orbitron neon-text-cyan mb-6 flex items-center gap-3">
+        <Database className="text-[var(--color-cyber-cyan)]" /> DATA BACKUP
+      </h2>
+      
+      <div className="bg-[var(--color-cyber-card)] border border-gray-800 p-8 rounded-lg">
+        <p className="text-gray-400 mb-8">
+          Securely backup your Cyber Cafe Manager data to a local SQLite database file, or restore from a previous backup.
+        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <button 
+            onClick={exportToSQLite}
+            className="flex flex-col items-center justify-center gap-4 p-8 border-2 border-[var(--color-cyber-cyan)] rounded-lg bg-[var(--color-cyber-cyan)]/10 hover:bg-[var(--color-cyber-cyan)]/20 transition-all group"
+          >
+            <Download className="w-12 h-12 text-[var(--color-cyber-cyan)] group-hover:scale-110 transition-transform" />
+            <div className="text-center">
+              <h3 className="text-lg font-orbitron text-white mb-1">Export Backup</h3>
+              <p className="text-sm text-gray-400">Save data as .sqlite</p>
+            </div>
+          </button>
+
+          <button 
+            onClick={() => fileInputRef.current?.click()}
+            className="flex flex-col items-center justify-center gap-4 p-8 border-2 border-[var(--color-cyber-magenta)] rounded-lg bg-[var(--color-cyber-magenta)]/10 hover:bg-[var(--color-cyber-magenta)]/20 transition-all group"
+          >
+            <Upload className="w-12 h-12 text-[var(--color-cyber-magenta)] group-hover:scale-110 transition-transform" />
+            <div className="text-center">
+              <h3 className="text-lg font-orbitron text-white mb-1">Import Backup</h3>
+              <p className="text-sm text-gray-400">Restore from .sqlite</p>
+            </div>
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              onChange={importFromSQLite} 
+              accept=".sqlite,.db" 
+              className="hidden" 
+            />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
   const renderHistory = () => (
     <div className="space-y-6">
       <h2 className="text-3xl font-orbitron neon-text-cyan mb-6">TRANSACTION LOGS</h2>
@@ -928,6 +1084,7 @@ export default function App() {
             { id: 'snacks', icon: Coffee, label: 'Cafe Menu', color: 'cyan' },
             { id: 'members', icon: Users, label: 'Members', color: 'magenta' },
             { id: 'history', icon: History, label: 'History', color: 'amber' },
+            { id: 'settings', icon: Database, label: 'Data Backup', color: 'cyan' },
           ].map(item => {
             const isActive = activeTab === item.id;
             const Icon = item.icon;
@@ -963,6 +1120,7 @@ export default function App() {
         {activeTab === 'snacks' && renderSnacks()}
         {activeTab === 'members' && renderMembers()}
         {activeTab === 'history' && renderHistory()}
+        {activeTab === 'settings' && renderSettings()}
       </div>
 
       {/* Modals */}
