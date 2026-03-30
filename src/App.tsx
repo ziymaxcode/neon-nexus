@@ -1,6 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import initSqlJs from 'sql.js';
+import * as initSqlJs from 'sql.js';
+import sqlWasmUrl from 'sql.js/dist/sql-wasm.wasm?url';
 import { QRCodeSVG } from 'qrcode.react';
+import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
+import { Share } from '@capacitor/share';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 import { 
   Monitor, Gamepad2, Receipt, Coffee, Users, History, 
   Play, Square, Plus, Trash2, Edit, Printer, CheckCircle, 
@@ -67,6 +73,7 @@ interface Bill {
   snacks: BillItem[];
   status: 'Pending' | 'Paid';
   createdAt: number;
+  customDiscount?: number;
 }
 
 interface Transaction {
@@ -175,6 +182,8 @@ export default function App() {
   const [viewingBill, setViewingBill] = useState<Bill | null>(null);
   const [isWhatsAppModalOpen, setIsWhatsAppModalOpen] = useState(false);
   const [whatsappPhone, setWhatsappPhone] = useState('');
+  const [isDiscountModalOpen, setIsDiscountModalOpen] = useState(false);
+  const [discountInput, setDiscountInput] = useState('');
 
   // Live timer update
   useEffect(() => {
@@ -362,20 +371,21 @@ export default function App() {
     if (!selectedBill) return;
     
     const snacksTotal = selectedBill.snacks.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    let discount = 0;
+    let memberDiscount = 0;
     
     if (selectedBill.memberId) {
       const member = members.find(m => m.id === selectedBill.memberId);
       if (member && member.status === 'Active') {
-        if (member.plan === 'Basic') discount = selectedBill.gamingCharge * 0.10;
-        if (member.plan === 'Silver') discount = selectedBill.gamingCharge * 0.20;
-        if (member.plan === 'Gold') discount = selectedBill.gamingCharge * 0.30;
+        if (member.plan === 'Basic') memberDiscount = selectedBill.gamingCharge * 0.10;
+        if (member.plan === 'Silver') memberDiscount = selectedBill.gamingCharge * 0.20;
+        if (member.plan === 'Gold') memberDiscount = selectedBill.gamingCharge * 0.30;
       }
     }
     
-    const subtotal = selectedBill.gamingCharge + snacksTotal - discount;
-    const tax = subtotal * 0.05;
-    const grandTotal = subtotal + tax;
+    const customDiscount = selectedBill.customDiscount || 0;
+    const totalDiscount = memberDiscount + customDiscount;
+    const rawSubtotal = selectedBill.gamingCharge + snacksTotal;
+    const grandTotal = Math.max(0, rawSubtotal - totalDiscount);
 
     const newTx: Transaction = {
       id: `tx_${Date.now()}`,
@@ -385,7 +395,7 @@ export default function App() {
       durationMinutes: selectedBill.durationMinutes || 0,
       gamingTotal: selectedBill.gamingCharge,
       snacksTotal,
-      discount,
+      discount: totalDiscount,
       grandTotal,
       paymentMethod
     };
@@ -603,18 +613,19 @@ export default function App() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {bills.map(bill => {
             const snacksTotal = bill.snacks.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            let discount = 0;
+            let memberDiscount = 0;
             if (bill.memberId) {
               const member = members.find(m => m.id === bill.memberId);
               if (member && member.status === 'Active') {
-                if (member.plan === 'Basic') discount = bill.gamingCharge * 0.10;
-                if (member.plan === 'Silver') discount = bill.gamingCharge * 0.20;
-                if (member.plan === 'Gold') discount = bill.gamingCharge * 0.30;
+                if (member.plan === 'Basic') memberDiscount = bill.gamingCharge * 0.10;
+                if (member.plan === 'Silver') memberDiscount = bill.gamingCharge * 0.20;
+                if (member.plan === 'Gold') memberDiscount = bill.gamingCharge * 0.30;
               }
             }
-            const subtotal = bill.gamingCharge + snacksTotal - discount;
-            const tax = subtotal * 0.05;
-            const grandTotal = subtotal + tax;
+            const customDiscount = bill.customDiscount || 0;
+            const totalDiscount = memberDiscount + customDiscount;
+            const rawSubtotal = bill.gamingCharge + snacksTotal;
+            const grandTotal = Math.max(0, rawSubtotal - totalDiscount);
 
             return (
               <div key={bill.id} className="bg-[var(--color-cyber-card)] border border-gray-700 rounded-lg p-6 relative overflow-hidden">
@@ -659,16 +670,18 @@ export default function App() {
                     <span>Subtotal</span>
                     <span>₹{(bill.gamingCharge + snacksTotal).toFixed(2)}</span>
                   </div>
-                  {discount > 0 && (
-                    <div className="flex justify-between text-[var(--color-cyber-cyan)]">
-                      <span>Member Discount</span>
-                      <span>-₹{discount.toFixed(2)}</span>
-                    </div>
-                  )}
-                  <div className="flex justify-between text-gray-400">
-                    <span>GST (5%)</span>
-                    <span>₹{tax.toFixed(2)}</span>
-                  </div>
+                  {memberDiscount > 0 && (
+                      <div className="flex justify-between text-[var(--color-cyber-cyan)]">
+                        <span>Member Discount</span>
+                        <span>-₹{memberDiscount.toFixed(2)}</span>
+                      </div>
+                    )}
+                    {customDiscount > 0 && (
+                      <div className="flex justify-between text-[var(--color-cyber-cyan)]">
+                        <span>Extra Discount</span>
+                        <span>-₹{customDiscount.toFixed(2)}</span>
+                      </div>
+                    )}
                   <div className="flex justify-between text-xl font-orbitron text-[var(--color-cyber-amber)] pt-2 border-t border-gray-800">
                     <span>TOTAL</span>
                     <span>₹{grandTotal.toFixed(2)}</span>
@@ -804,7 +817,7 @@ export default function App() {
   const exportToSQLite = async () => {
     try {
       const SQL = await initSqlJs({
-        locateFile: file => `https://sql.js.org/dist/${file}`
+        locateFile: () => sqlWasmUrl
       });
       const db = new SQL.Database();
       
@@ -812,27 +825,55 @@ export default function App() {
       db.run("CREATE TABLE sessions (id TEXT, stationId TEXT, customerName TEXT, memberId TEXT, startTime REAL, ratePerHour REAL);");
       db.run("CREATE TABLE snacks (id TEXT, name TEXT, price REAL, category TEXT, emoji TEXT);");
       db.run("CREATE TABLE members (id TEXT, name TEXT, phone TEXT, email TEXT, plan TEXT, joinDate TEXT, expiryDate TEXT, totalVisits INTEGER, status TEXT);");
-      db.run("CREATE TABLE bills (id TEXT, sessionId TEXT, customerName TEXT, memberId TEXT, stationName TEXT, durationMinutes REAL, gamingCharge REAL, snacks TEXT, status TEXT, createdAt REAL);");
+      db.run("CREATE TABLE bills (id TEXT, sessionId TEXT, customerName TEXT, memberId TEXT, stationName TEXT, durationMinutes REAL, gamingCharge REAL, snacks TEXT, status TEXT, createdAt REAL, customDiscount REAL);");
       db.run("CREATE TABLE transactions (id TEXT, date REAL, customerName TEXT, stationName TEXT, durationMinutes REAL, gamingTotal REAL, snacksTotal REAL, discount REAL, grandTotal REAL, paymentMethod TEXT);");
 
       stations.forEach(s => db.run("INSERT INTO stations VALUES (?, ?, ?, ?, ?)", [s.id, s.name, s.type, s.status, s.ratePerHour]));
       sessions.forEach(s => db.run("INSERT INTO sessions VALUES (?, ?, ?, ?, ?, ?)", [s.id, s.stationId, s.customerName, s.memberId || null, s.startTime, s.ratePerHour]));
       snacks.forEach(s => db.run("INSERT INTO snacks VALUES (?, ?, ?, ?, ?)", [s.id, s.name, s.price, s.category, s.emoji]));
       members.forEach(m => db.run("INSERT INTO members VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", [m.id, m.name, m.phone, m.email, m.plan, m.joinDate, m.expiryDate, m.totalVisits, m.status]));
-      bills.forEach(b => db.run("INSERT INTO bills VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [b.id, b.sessionId || null, b.customerName, b.memberId || null, b.stationName || null, b.durationMinutes || 0, b.gamingCharge, JSON.stringify(b.snacks), b.status, b.createdAt]));
+      bills.forEach(b => db.run("INSERT INTO bills VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [b.id, b.sessionId || null, b.customerName, b.memberId || null, b.stationName || null, b.durationMinutes || 0, b.gamingCharge, JSON.stringify(b.snacks), b.status, b.createdAt, b.customDiscount || 0]));
       transactions.forEach(t => db.run("INSERT INTO transactions VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [t.id, t.date, t.customerName, t.stationName, t.durationMinutes, t.gamingTotal, t.snacksTotal, t.discount, t.grandTotal, t.paymentMethod]));
 
       const data = db.export();
-      const blob = new Blob([data as any], { type: 'application/x-sqlite3' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `cyber_cafe_backup_${new Date().toISOString().split('T')[0]}.sqlite`;
-      a.click();
-      URL.revokeObjectURL(url);
-    } catch (error) {
+      const fileName = `cyber_cafe_backup_${new Date().toISOString().split('T')[0]}.sqlite`;
+
+      if (Capacitor.isNativePlatform()) {
+        // Convert Uint8Array to base64
+        let base64Data = '';
+        const chunkSize = 8192;
+        for (let i = 0; i < data.length; i += chunkSize) {
+          const chunk = data.subarray(i, i + chunkSize);
+          base64Data += String.fromCharCode.apply(null, chunk as unknown as number[]);
+        }
+        base64Data = btoa(base64Data);
+
+        const result = await Filesystem.writeFile({
+          path: fileName,
+          data: base64Data,
+          directory: Directory.Documents,
+        });
+
+        await Share.share({
+          title: 'Cyber Cafe Backup',
+          text: 'Here is your database backup.',
+          url: result.uri,
+          dialogTitle: 'Share Backup',
+        });
+      } else {
+        const blob = new Blob([data as any], { type: 'application/x-sqlite3' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+    } catch (error: any) {
       console.error("Export failed", error);
-      alert("Failed to export database.");
+      alert(`Failed to export database: ${error?.message || error}`);
     }
   };
 
@@ -843,7 +884,7 @@ export default function App() {
     try {
       const arrayBuffer = await file.arrayBuffer();
       const SQL = await initSqlJs({
-        locateFile: file => `https://sql.js.org/dist/${file}`
+        locateFile: () => sqlWasmUrl
       });
       const db = new SQL.Database(new Uint8Array(arrayBuffer));
 
@@ -878,7 +919,8 @@ export default function App() {
       if (newBills.length > 0) {
         setBills(newBills.map((b: any) => ({
           ...b,
-          snacks: typeof b.snacks === 'string' ? JSON.parse(b.snacks) : b.snacks
+          snacks: typeof b.snacks === 'string' ? JSON.parse(b.snacks) : b.snacks,
+          customDiscount: b.customDiscount || 0
         })) as Bill[]);
       }
 
@@ -1035,25 +1077,66 @@ export default function App() {
     if (!viewingBill) return null;
 
     const snacksTotal = viewingBill.snacks.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    let discount = 0;
+    let memberDiscount = 0;
     if (viewingBill.memberId) {
       const member = members.find(m => m.id === viewingBill.memberId);
       if (member && member.status === 'Active') {
-        if (member.plan === 'Basic') discount = viewingBill.gamingCharge * 0.10;
-        if (member.plan === 'Silver') discount = viewingBill.gamingCharge * 0.20;
-        if (member.plan === 'Gold') discount = viewingBill.gamingCharge * 0.30;
+        if (member.plan === 'Basic') memberDiscount = viewingBill.gamingCharge * 0.10;
+        if (member.plan === 'Silver') memberDiscount = viewingBill.gamingCharge * 0.20;
+        if (member.plan === 'Gold') memberDiscount = viewingBill.gamingCharge * 0.30;
       }
     }
-    const subtotal = viewingBill.gamingCharge + snacksTotal - discount;
-    const tax = subtotal * 0.05;
-    const grandTotal = subtotal + tax;
+    const customDiscount = viewingBill.customDiscount || 0;
+    const totalDiscount = memberDiscount + customDiscount;
+    const rawSubtotal = viewingBill.gamingCharge + snacksTotal;
+    const grandTotal = Math.max(0, rawSubtotal - totalDiscount);
 
     const upiUrl = businessUpiId 
       ? `upi://pay?pa=${businessUpiId}&pn=Neon%20Nexus&am=${grandTotal.toFixed(2)}&cu=INR`
       : '';
 
-    const handlePrint = () => {
-      window.print();
+    const handlePrint = async () => {
+      if (Capacitor.isNativePlatform()) {
+        const element = document.getElementById('bill-receipt');
+        if (!element) return;
+
+        try {
+          // Temporarily hide action buttons if they are inside the element
+          const canvas = await html2canvas(element, { scale: 2, backgroundColor: '#ffffff' });
+          const imgData = canvas.toDataURL('image/png');
+          
+          const pdfWidth = 80; // 80mm thermal printer width
+          const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+          
+          const pdf = new jsPDF({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: [pdfWidth, pdfHeight]
+          });
+          
+          pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+          const pdfBase64 = pdf.output('datauristring').split(',')[1];
+          
+          const fileName = `bill_${viewingBill.id || Date.now()}.pdf`;
+          const result = await Filesystem.writeFile({
+            path: fileName,
+            data: pdfBase64,
+            directory: Directory.Cache,
+          });
+
+          await Share.share({
+            title: 'Print Bill',
+            text: 'Here is the bill receipt.',
+            url: result.uri,
+            dialogTitle: 'Print or Share Bill',
+          });
+        } catch (err: any) {
+          console.error('PDF generation failed', err);
+          alert('Failed to generate print file: ' + (err.message || err));
+        }
+      } else {
+        window.print();
+      }
     };
 
     const handleWhatsAppClick = () => {
@@ -1073,9 +1156,9 @@ export default function App() {
       viewingBill.snacks.forEach(s => {
         text += `- ${s.name} (x${s.quantity}): ₹${(s.price * s.quantity).toFixed(2)}\n`;
       });
-      text += `\nSubtotal: ₹${(viewingBill.gamingCharge + snacksTotal).toFixed(2)}\n`;
-      if (discount > 0) text += `Discount: -₹${discount.toFixed(2)}\n`;
-      text += `GST (5%): ₹${tax.toFixed(2)}\n`;
+      text += `\nSubtotal: ₹${rawSubtotal.toFixed(2)}\n`;
+      if (memberDiscount > 0) text += `Member Discount: -₹${memberDiscount.toFixed(2)}\n`;
+      if (customDiscount > 0) text += `Extra Discount: -₹${customDiscount.toFixed(2)}\n`;
       text += `*GRAND TOTAL: ₹${grandTotal.toFixed(2)}*\n\n`;
       
       if (upiUrl) {
@@ -1111,71 +1194,126 @@ export default function App() {
           </div>
 
           {/* Bill Content */}
-          <div className="text-center mb-6 border-b border-dashed border-gray-400 pb-4">
-            <h1 className="text-2xl font-bold m-0">NEON NEXUS</h1>
-            <p className="text-sm m-1">Gaming Cafe & Lounge</p>
-            <p className="text-sm m-1">Date: {new Date().toLocaleString()}</p>
-          </div>
-          
-          <div className="flex justify-between my-2 text-sm"><span>Customer:</span> <span>{viewingBill.customerName}</span></div>
-          {viewingBill.stationName && (
-            <div className="flex justify-between my-2 text-sm"><span>Station:</span> <span>{viewingBill.stationName} ({viewingBill.durationMinutes} mins)</span></div>
-          )}
-          
-          <div className="border-t border-dashed border-gray-400 my-4"></div>
-          
-          <table className="w-full text-left border-collapse mt-2 text-sm">
-            <thead>
-              <tr>
-                <th className="border-b border-black py-1">Item</th>
-                <th className="border-b border-black py-1 text-right">Qty</th>
-                <th className="border-b border-black py-1 text-right">Price</th>
-                <th className="border-b border-black py-1 text-right">Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              {viewingBill.gamingCharge > 0 && (
+          <div id="bill-receipt" className="bg-white p-4">
+            <div className="text-center mb-6 border-b border-dashed border-gray-400 pb-4">
+              <h1 className="text-2xl font-bold m-0">NEON NEXUS</h1>
+              <p className="text-sm m-1">Gaming Cafe & Lounge</p>
+              <p className="text-sm m-1">Date: {new Date().toLocaleString()}</p>
+            </div>
+            
+            <div className="flex justify-between my-2 text-sm"><span>Customer:</span> <span>{viewingBill.customerName}</span></div>
+            {viewingBill.stationName && (
+              <div className="flex justify-between my-2 text-sm"><span>Station:</span> <span>{viewingBill.stationName} ({viewingBill.durationMinutes} mins)</span></div>
+            )}
+            
+            <div className="border-t border-dashed border-gray-400 my-4"></div>
+            
+            <table className="w-full text-left border-collapse mt-2 text-sm">
+              <thead>
                 <tr>
-                  <td className="py-1">Gaming Charge</td>
-                  <td className="py-1 text-right">-</td>
-                  <td className="py-1 text-right">-</td>
-                  <td className="py-1 text-right">₹{viewingBill.gamingCharge.toFixed(2)}</td>
+                  <th className="border-b border-black py-1">Item</th>
+                  <th className="border-b border-black py-1 text-right">Qty</th>
+                  <th className="border-b border-black py-1 text-right">Price</th>
+                  <th className="border-b border-black py-1 text-right">Total</th>
                 </tr>
-              )}
-              {viewingBill.snacks.map((s, idx) => (
-                <tr key={idx}>
-                  <td className="py-1">{s.name}</td>
-                  <td className="py-1 text-right">{s.quantity}</td>
-                  <td className="py-1 text-right">₹{s.price}</td>
-                  <td className="py-1 text-right">₹{(s.price * s.quantity).toFixed(2)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          
-          <div className="border-t border-dashed border-gray-400 my-4"></div>
-          
-          <div className="flex justify-between my-1 text-sm"><span>Subtotal:</span> <span>₹{(viewingBill.gamingCharge + snacksTotal).toFixed(2)}</span></div>
-          {discount > 0 && <div className="flex justify-between my-1 text-sm"><span>Member Discount:</span> <span>-₹{discount.toFixed(2)}</span></div>}
-          <div className="flex justify-between my-1 text-sm"><span>GST (5%):</span> <span>₹{tax.toFixed(2)}</span></div>
-          
-          <div className="border-t border-dashed border-gray-400 my-4"></div>
-          
-          <div className="flex justify-between my-2 font-bold text-lg"><span>GRAND TOTAL:</span> <span>₹{grandTotal.toFixed(2)}</span></div>
-          
-          {businessUpiId && (
-            <div className="mt-6 flex flex-col items-center justify-center">
-              <p className="text-xs mb-2 font-bold">Scan to Pay via UPI</p>
-              <QRCodeSVG value={upiUrl} size={120} />
-              <p className="text-xs mt-2 text-gray-500">{businessUpiId}</p>
+              </thead>
+              <tbody>
+                {viewingBill.gamingCharge > 0 && (
+                  <tr>
+                    <td className="py-1">Gaming Charge</td>
+                    <td className="py-1 text-right">-</td>
+                    <td className="py-1 text-right">-</td>
+                    <td className="py-1 text-right">₹{viewingBill.gamingCharge.toFixed(2)}</td>
+                  </tr>
+                )}
+                {viewingBill.snacks.map((s, idx) => (
+                  <tr key={idx}>
+                    <td className="py-1">{s.name}</td>
+                    <td className="py-1 text-right">{s.quantity}</td>
+                    <td className="py-1 text-right">₹{s.price}</td>
+                    <td className="py-1 text-right">₹{(s.price * s.quantity).toFixed(2)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            
+            <div className="border-t border-dashed border-gray-400 my-4"></div>
+            
+            <div className="flex justify-between my-1 text-sm"><span>Subtotal:</span> <span>₹{rawSubtotal.toFixed(2)}</span></div>
+            {memberDiscount > 0 && <div className="flex justify-between my-1 text-sm"><span>Member Discount:</span> <span>-₹{memberDiscount.toFixed(2)}</span></div>}
+            {customDiscount > 0 && <div className="flex justify-between my-1 text-sm"><span>Extra Discount:</span> <span>-₹{customDiscount.toFixed(2)}</span></div>}
+            
+            <div className="border-t border-dashed border-gray-400 my-4"></div>
+            
+            <div className="flex justify-between my-2 font-bold text-lg"><span>GRAND TOTAL:</span> <span>₹{grandTotal.toFixed(2)}</span></div>
+            
+            {businessUpiId && (
+              <div className="mt-6 flex flex-col items-center justify-center">
+                <p className="text-xs mb-2 font-bold">Scan to Pay via UPI</p>
+                <QRCodeSVG value={upiUrl} size={120} />
+                <p className="text-xs mt-2 text-gray-500">{businessUpiId}</p>
+              </div>
+            )}
+
+            <div className="text-center mt-8 text-sm">
+              <p>Thank you for playing!</p>
+              <p>See you in the cyber grid.</p>
+            </div>
+          </div>
+
+          {viewingBill.status === 'Pending' && (
+            <div className="mt-4 flex gap-2 print:hidden">
+              <button 
+                onClick={() => setIsDiscountModalOpen(true)}
+                className="flex-1 py-3 bg-yellow-500/20 text-yellow-500 border border-yellow-500 rounded hover:bg-yellow-500/30 transition-colors font-bold"
+              >
+                Add Discount
+              </button>
             </div>
           )}
-
-          <div className="text-center mt-8 text-sm">
-            <p>Thank you for playing!</p>
-            <p>See you in the cyber grid.</p>
-          </div>
         </div>
+
+        {/* Discount Modal */}
+        {isDiscountModalOpen && (
+          <div className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center z-[70] p-4">
+            <div className="bg-[var(--color-cyber-card)] border border-[var(--color-cyber-cyan)] p-6 rounded-lg max-w-sm w-full neon-border-cyan">
+              <h3 className="text-xl font-orbitron text-white mb-4">Add Extra Discount</h3>
+              <p className="text-gray-400 text-sm mb-4">Enter discount amount (₹):</p>
+              <input 
+                type="number" 
+                value={discountInput}
+                onChange={(e) => setDiscountInput(e.target.value)}
+                placeholder="0"
+                className="w-full bg-gray-900 border border-gray-700 rounded p-3 text-white focus:border-[var(--color-cyber-cyan)] outline-none mb-6"
+                autoFocus
+              />
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => {
+                    setIsDiscountModalOpen(false);
+                    setDiscountInput('');
+                  }}
+                  className="flex-1 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={() => {
+                    const amt = parseFloat(discountInput) || 0;
+                    const updatedBill = { ...viewingBill, customDiscount: amt };
+                    setViewingBill(updatedBill);
+                    setBills(bills.map(b => b.id === updatedBill.id ? updatedBill : b));
+                    setIsDiscountModalOpen(false);
+                    setDiscountInput('');
+                  }}
+                  className="flex-1 py-2 bg-[var(--color-cyber-cyan)] hover:bg-cyan-400 text-black font-bold rounded transition-colors"
+                >
+                  Apply
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* WhatsApp Phone Number Modal */}
         {isWhatsAppModalOpen && (
