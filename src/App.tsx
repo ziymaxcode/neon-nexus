@@ -886,8 +886,16 @@ export default function App() {
   const exportToSQLite = async () => {
     try {
       const SQL = await initSqlJs({
-        locateFile: file => `https://sql.js.org/dist/${file}`
-      });
+  locateFile: (file) => {
+    // Electron production (exe)
+    if (window.location.protocol === 'file:') {
+      return `${window.location.pathname.replace(/\/[^/]*$/, '')}/sql-wasm.wasm`;
+    }
+
+    // Dev mode
+    return `/sql-wasm.wasm`;
+  }
+});
       const db = new SQL.Database();
       
       db.run("CREATE TABLE stations (id TEXT, name TEXT, type TEXT, status TEXT, ratePerHour REAL);");
@@ -925,8 +933,16 @@ export default function App() {
     try {
       const arrayBuffer = await file.arrayBuffer();
       const SQL = await initSqlJs({
-        locateFile: file => `https://sql.js.org/dist/${file}`
-      });
+  locateFile: (file) => {
+    // Electron production (exe)
+    if (window.location.protocol === 'file:') {
+      return `${window.location.pathname.replace(/\/[^/]*$/, '')}/sql-wasm.wasm`;
+    }
+
+    // Dev mode
+    return `/sql-wasm.wasm`;
+  }
+});
       const db = new SQL.Database(new Uint8Array(arrayBuffer));
 
       const extractTable = (tableName: string) => {
@@ -979,13 +995,22 @@ export default function App() {
     }
   };
 
+  const clearAllData = () => {
+    if (window.confirm("WARNING: This will permanently delete ALL your data (stations, sessions, bills, members, history). Are you absolutely sure?")) {
+      if (window.confirm("Please confirm again. This action CANNOT be undone.")) {
+        localStorage.clear();
+        window.location.reload();
+      }
+    }
+  };
+
   const renderSettings = () => (
     <div className="space-y-6 max-w-2xl">
       <h2 className="text-3xl font-orbitron neon-text-cyan mb-6 flex items-center gap-3">
         <Database className="text-[var(--color-cyber-cyan)]" /> DATA BACKUP
       </h2>
       
-      <div className="bg-[var(--color-cyber-card)] border border-gray-800 p-8 rounded-lg">
+      <div className="bg-[var(--color-cyber-card)] border border-gray-800 p-8 rounded-lg mb-6">
         <p className="text-gray-400 mb-8">
           Securely backup your Cyber Cafe Manager data to a local SQLite database file, or restore from a previous backup.
         </p>
@@ -1020,6 +1045,21 @@ export default function App() {
             />
           </button>
         </div>
+      </div>
+
+      <div className="bg-[var(--color-cyber-card)] border border-red-900/50 p-8 rounded-lg">
+        <h3 className="text-xl font-orbitron text-red-500 mb-4 flex items-center gap-2">
+          <Trash2 className="w-6 h-6" /> DANGER ZONE
+        </h3>
+        <p className="text-gray-400 mb-6">
+          This will permanently delete all your stations, sessions, members, and transaction history. Make sure you have exported a backup first!
+        </p>
+        <button 
+          onClick={clearAllData}
+          className="px-6 py-3 bg-red-500/10 text-red-500 border border-red-500/50 rounded hover:bg-red-500 hover:text-white transition-colors font-orbitron tracking-wider flex items-center gap-2"
+        >
+          <Trash2 className="w-5 h-5" /> CLEAR ALL DATA
+        </button>
       </div>
     </div>
   );

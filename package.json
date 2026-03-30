@@ -22,6 +22,9 @@
     "directories": {
       "output": "dist-electron"
     },
+     "asarUnpack": [
+    "**/*.wasm"
+  ],
     "files": [
       "dist/**/*",
       "electron/**/*"
