@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import initSqlJs from 'sql.js';
+import { QRCodeSVG } from 'qrcode.react';
 import { 
   Monitor, Gamepad2, Receipt, Coffee, Users, History, 
   Play, Square, Plus, Trash2, Edit, Printer, CheckCircle, 
-  Clock, DollarSign, Activity, Zap, Database, Download, Upload
+  Clock, DollarSign, Activity, Zap, Database, Download, Upload,
+  Menu, X, ArrowLeft, MessageCircle
 } from 'lucide-react';
 
 // --- Types ---
@@ -128,6 +130,7 @@ const calculateCost = (startTime: number, ratePerHour: number) => {
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [stations, setStations] = useState<Station[]>(() => loadState('neon_nexus_stations_v2', initialStations));
   const [sessions, setSessions] = useState<Session[]>(() => loadState('neon_nexus_sessions_v2', []));
   const [snacks, setSnacks] = useState<Snack[]>(() => loadState('neon_nexus_snacks_v2', initialSnacks));
@@ -168,11 +171,20 @@ export default function App() {
   const [newSnackForm, setNewSnackForm] = useState({ name: '', price: 50, emoji: '🥤', category: 'Beverage' });
   const [editingSnackId, setEditingSnackId] = useState<string | null>(null);
 
+  const [businessUpiId, setBusinessUpiId] = useState<string>(() => localStorage.getItem('neon_nexus_upi_id') || '');
+  const [viewingBill, setViewingBill] = useState<Bill | null>(null);
+  const [isWhatsAppModalOpen, setIsWhatsAppModalOpen] = useState(false);
+  const [whatsappPhone, setWhatsappPhone] = useState('');
+
   // Live timer update
   useEffect(() => {
     const interval = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem('neon_nexus_upi_id', businessUpiId);
+  }, [businessUpiId]);
 
   // --- Actions ---
   const handleAddStation = () => {
@@ -389,101 +401,7 @@ export default function App() {
   };
 
   const printBill = (bill: Bill) => {
-    const snacksTotal = bill.snacks.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    let discount = 0;
-    if (bill.memberId) {
-      const member = members.find(m => m.id === bill.memberId);
-      if (member && member.status === 'Active') {
-        if (member.plan === 'Basic') discount = bill.gamingCharge * 0.10;
-        if (member.plan === 'Silver') discount = bill.gamingCharge * 0.20;
-        if (member.plan === 'Gold') discount = bill.gamingCharge * 0.30;
-      }
-    }
-    const subtotal = bill.gamingCharge + snacksTotal - discount;
-    const tax = subtotal * 0.05;
-    const grandTotal = subtotal + tax;
-
-    const printWindow = window.open('', '_blank', 'width=400,height=600');
-    if (!printWindow) return;
-
-    const html = `
-      <html>
-        <head>
-          <title>Bill - Neon Nexus</title>
-          <style>
-            body { font-family: monospace; padding: 20px; color: #000; background: #fff; }
-            .header { text-align: center; margin-bottom: 20px; border-bottom: 1px dashed #000; padding-bottom: 10px; }
-            .title { font-size: 24px; font-weight: bold; margin: 0; }
-            .subtitle { font-size: 12px; margin: 5px 0; }
-            .row { display: flex; justify-content: space-between; margin: 5px 0; }
-            .divider { border-top: 1px dashed #000; margin: 10px 0; }
-            table { width: 100%; text-align: left; border-collapse: collapse; margin-top: 10px; }
-            th, td { padding: 5px 0; }
-            th { border-bottom: 1px solid #000; }
-            .text-right { text-align: right; }
-            .total-row { font-weight: bold; font-size: 16px; }
-            .footer { text-align: center; margin-top: 30px; font-size: 12px; }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <h1 class="title">NEON NEXUS</h1>
-            <p class="subtitle">Gaming Cafe & Lounge</p>
-            <p class="subtitle">Date: ${new Date().toLocaleString()}</p>
-          </div>
-          
-          <div class="row"><span>Customer:</span> <span>${bill.customerName}</span></div>
-          ${bill.stationName ? `<div class="row"><span>Station:</span> <span>${bill.stationName} (${bill.durationMinutes} mins)</span></div>` : ''}
-          
-          <div class="divider"></div>
-          
-          <table>
-            <thead>
-              <tr>
-                <th>Item</th>
-                <th class="text-right">Qty</th>
-                <th class="text-right">Price</th>
-                <th class="text-right">Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${bill.gamingCharge > 0 ? `
-              <tr>
-                <td>Gaming Charge</td>
-                <td class="text-right">-</td>
-                <td class="text-right">-</td>
-                <td class="text-right">₹${bill.gamingCharge.toFixed(2)}</td>
-              </tr>` : ''}
-              ${bill.snacks.map(s => `
-              <tr>
-                <td>${s.name}</td>
-                <td class="text-right">${s.quantity}</td>
-                <td class="text-right">₹${s.price}</td>
-                <td class="text-right">₹${(s.price * s.quantity).toFixed(2)}</td>
-              </tr>`).join('')}
-            </tbody>
-          </table>
-          
-          <div class="divider"></div>
-          
-          <div class="row"><span>Subtotal:</span> <span>₹${(bill.gamingCharge + snacksTotal).toFixed(2)}</span></div>
-          ${discount > 0 ? `<div class="row"><span>Member Discount:</span> <span>-₹${discount.toFixed(2)}</span></div>` : ''}
-          <div class="row"><span>GST (5%):</span> <span>₹${tax.toFixed(2)}</span></div>
-          
-          <div class="divider"></div>
-          
-          <div class="row total-row"><span>GRAND TOTAL:</span> <span>₹${grandTotal.toFixed(2)}</span></div>
-          
-          <div class="footer">
-            <p>Thank you for playing!</p>
-            <p>See you in the cyber grid.</p>
-          </div>
-          <script>window.print();</script>
-        </body>
-      </html>
-    `;
-    printWindow.document.write(html);
-    printWindow.document.close();
+    setViewingBill(bill);
   };
 
   // --- Renderers ---
@@ -498,44 +416,44 @@ export default function App() {
       <div className="space-y-6">
         <h2 className="text-3xl font-orbitron neon-text-cyan mb-6">SYSTEM DASHBOARD</h2>
         
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="bg-[var(--color-cyber-card)] border border-[var(--color-cyber-cyan)] p-6 rounded-lg neon-border-cyan">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+          <div className="bg-[var(--color-cyber-card)] border border-[var(--color-cyber-cyan)] p-4 md:p-6 rounded-lg neon-border-cyan">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-400 text-sm uppercase tracking-wider">Active Sessions</p>
-                <h3 className="text-4xl font-orbitron text-white mt-2">{sessions.length}</h3>
+                <p className="text-gray-400 text-xs md:text-sm uppercase tracking-wider">Active Sessions</p>
+                <h3 className="text-3xl md:text-4xl font-orbitron text-white mt-2">{sessions.length}</h3>
               </div>
-              <Activity className="w-12 h-12 text-[var(--color-cyber-cyan)] opacity-80" />
+              <Activity className="w-10 h-10 md:w-12 md:h-12 text-[var(--color-cyber-cyan)] opacity-80" />
             </div>
           </div>
           
-          <div className="bg-[var(--color-cyber-card)] border border-[var(--color-cyber-magenta)] p-6 rounded-lg neon-border-magenta">
+          <div className="bg-[var(--color-cyber-card)] border border-[var(--color-cyber-magenta)] p-4 md:p-6 rounded-lg neon-border-magenta">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-400 text-sm uppercase tracking-wider">Today's Revenue</p>
-                <h3 className="text-4xl font-orbitron text-white mt-2">₹{todayRevenue.toFixed(0)}</h3>
+                <p className="text-gray-400 text-xs md:text-sm uppercase tracking-wider">Today's Revenue</p>
+                <h3 className="text-3xl md:text-4xl font-orbitron text-white mt-2">₹{todayRevenue.toFixed(0)}</h3>
               </div>
-              <DollarSign className="w-12 h-12 text-[var(--color-cyber-magenta)] opacity-80" />
+              <DollarSign className="w-10 h-10 md:w-12 md:h-12 text-[var(--color-cyber-magenta)] opacity-80" />
             </div>
           </div>
 
-          <div className="bg-[var(--color-cyber-card)] border border-[#00ff00] p-6 rounded-lg shadow-[0_0_10px_rgba(0,255,0,0.2)]">
+          <div className="bg-[var(--color-cyber-card)] border border-[#00ff00] p-4 md:p-6 rounded-lg shadow-[0_0_10px_rgba(0,255,0,0.2)]">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-400 text-sm uppercase tracking-wider">Total Revenue</p>
-                <h3 className="text-4xl font-orbitron text-white mt-2">₹{totalRevenue.toFixed(0)}</h3>
+                <p className="text-gray-400 text-xs md:text-sm uppercase tracking-wider">Total Revenue</p>
+                <h3 className="text-3xl md:text-4xl font-orbitron text-white mt-2">₹{totalRevenue.toFixed(0)}</h3>
               </div>
-              <DollarSign className="w-12 h-12 text-[#00ff00] opacity-80" />
+              <DollarSign className="w-10 h-10 md:w-12 md:h-12 text-[#00ff00] opacity-80" />
             </div>
           </div>
           
-          <div className="bg-[var(--color-cyber-card)] border border-[var(--color-cyber-amber)] p-6 rounded-lg neon-border-amber">
+          <div className="bg-[var(--color-cyber-card)] border border-[var(--color-cyber-amber)] p-4 md:p-6 rounded-lg neon-border-amber">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-400 text-sm uppercase tracking-wider">Active Members</p>
-                <h3 className="text-4xl font-orbitron text-white mt-2">{members.filter(m => m.status === 'Active').length}</h3>
+                <p className="text-gray-400 text-xs md:text-sm uppercase tracking-wider">Active Members</p>
+                <h3 className="text-3xl md:text-4xl font-orbitron text-white mt-2">{members.filter(m => m.status === 'Active').length}</h3>
               </div>
-              <Users className="w-12 h-12 text-[var(--color-cyber-amber)] opacity-80" />
+              <Users className="w-10 h-10 md:w-12 md:h-12 text-[var(--color-cyber-amber)] opacity-80" />
             </div>
           </div>
         </div>
@@ -886,16 +804,8 @@ export default function App() {
   const exportToSQLite = async () => {
     try {
       const SQL = await initSqlJs({
-  locateFile: (file) => {
-    // Electron production (exe)
-    if (window.location.protocol === 'file:') {
-      return `${window.location.pathname.replace(/\/[^/]*$/, '')}/sql-wasm.wasm`;
-    }
-
-    // Dev mode
-    return `/sql-wasm.wasm`;
-  }
-});
+        locateFile: file => `https://sql.js.org/dist/${file}`
+      });
       const db = new SQL.Database();
       
       db.run("CREATE TABLE stations (id TEXT, name TEXT, type TEXT, status TEXT, ratePerHour REAL);");
@@ -933,16 +843,8 @@ export default function App() {
     try {
       const arrayBuffer = await file.arrayBuffer();
       const SQL = await initSqlJs({
-  locateFile: (file) => {
-    // Electron production (exe)
-    if (window.location.protocol === 'file:') {
-      return `${window.location.pathname.replace(/\/[^/]*$/, '')}/sql-wasm.wasm`;
-    }
-
-    // Dev mode
-    return `/sql-wasm.wasm`;
-  }
-});
+        locateFile: file => `https://sql.js.org/dist/${file}`
+      });
       const db = new SQL.Database(new Uint8Array(arrayBuffer));
 
       const extractTable = (tableName: string) => {
@@ -1007,10 +909,34 @@ export default function App() {
   const renderSettings = () => (
     <div className="space-y-6 max-w-2xl">
       <h2 className="text-3xl font-orbitron neon-text-cyan mb-6 flex items-center gap-3">
-        <Database className="text-[var(--color-cyber-cyan)]" /> DATA BACKUP
+        <Database className="text-[var(--color-cyber-cyan)]" /> SYSTEM SETTINGS
       </h2>
+
+      <div className="bg-[var(--color-cyber-card)] border border-gray-800 p-8 rounded-lg mb-6">
+        <h3 className="text-xl font-orbitron text-white mb-4 flex items-center gap-2">
+          <DollarSign className="w-6 h-6 text-[var(--color-cyber-cyan)]" /> PAYMENT SETTINGS
+        </h3>
+        <p className="text-gray-400 mb-6">
+          Configure your Business UPI ID to automatically generate payment QR codes on customer bills.
+        </p>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-gray-400 text-sm mb-2">Business UPI ID</label>
+            <input 
+              type="text" 
+              value={businessUpiId}
+              onChange={(e) => setBusinessUpiId(e.target.value)}
+              placeholder="e.g., yourname@upi or 9876543210@paytm"
+              className="w-full bg-gray-900 border border-gray-700 rounded p-3 text-white focus:border-[var(--color-cyber-cyan)] outline-none"
+            />
+          </div>
+        </div>
+      </div>
       
       <div className="bg-[var(--color-cyber-card)] border border-gray-800 p-8 rounded-lg mb-6">
+        <h3 className="text-xl font-orbitron text-white mb-4 flex items-center gap-2">
+          <Database className="w-6 h-6 text-[var(--color-cyber-cyan)]" /> DATA BACKUP
+        </h3>
         <p className="text-gray-400 mb-8">
           Securely backup your Cyber Cafe Manager data to a local SQLite database file, or restore from a previous backup.
         </p>
@@ -1105,11 +1031,215 @@ export default function App() {
     </div>
   );
 
+  const renderBillModal = () => {
+    if (!viewingBill) return null;
+
+    const snacksTotal = viewingBill.snacks.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    let discount = 0;
+    if (viewingBill.memberId) {
+      const member = members.find(m => m.id === viewingBill.memberId);
+      if (member && member.status === 'Active') {
+        if (member.plan === 'Basic') discount = viewingBill.gamingCharge * 0.10;
+        if (member.plan === 'Silver') discount = viewingBill.gamingCharge * 0.20;
+        if (member.plan === 'Gold') discount = viewingBill.gamingCharge * 0.30;
+      }
+    }
+    const subtotal = viewingBill.gamingCharge + snacksTotal - discount;
+    const tax = subtotal * 0.05;
+    const grandTotal = subtotal + tax;
+
+    const upiUrl = businessUpiId 
+      ? `upi://pay?pa=${businessUpiId}&pn=Neon%20Nexus&am=${grandTotal.toFixed(2)}&cu=INR`
+      : '';
+
+    const handlePrint = () => {
+      window.print();
+    };
+
+    const handleWhatsAppClick = () => {
+      setIsWhatsAppModalOpen(true);
+    };
+
+    const sendWhatsApp = () => {
+      let text = `*NEON NEXUS - Bill Receipt*\n\n`;
+      text += `Customer: ${viewingBill.customerName}\n`;
+      if (viewingBill.stationName) {
+        text += `Station: ${viewingBill.stationName} (${viewingBill.durationMinutes} mins)\n`;
+      }
+      text += `\n*Items:*\n`;
+      if (viewingBill.gamingCharge > 0) {
+        text += `- Gaming Charge: ₹${viewingBill.gamingCharge.toFixed(2)}\n`;
+      }
+      viewingBill.snacks.forEach(s => {
+        text += `- ${s.name} (x${s.quantity}): ₹${(s.price * s.quantity).toFixed(2)}\n`;
+      });
+      text += `\nSubtotal: ₹${(viewingBill.gamingCharge + snacksTotal).toFixed(2)}\n`;
+      if (discount > 0) text += `Discount: -₹${discount.toFixed(2)}\n`;
+      text += `GST (5%): ₹${tax.toFixed(2)}\n`;
+      text += `*GRAND TOTAL: ₹${grandTotal.toFixed(2)}*\n\n`;
+      
+      if (upiUrl) {
+        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(upiUrl)}`;
+        text += `*Scan to Pay via UPI:*\n${qrUrl}\n\n`;
+      }
+
+      text += `Thank you for playing!`;
+
+      const phone = whatsappPhone.replace(/\D/g, '');
+      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank');
+      setIsWhatsAppModalOpen(false);
+      setWhatsappPhone('');
+    };
+
+    return (
+      <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="bg-white text-black p-8 rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto relative print:w-full print:h-full print:max-w-none print:p-0 print:m-0 print:bg-white print:rounded-none">
+          
+          {/* Action Buttons (Hidden when printing) */}
+          <div className="flex justify-between items-center mb-6 print:hidden">
+            <button onClick={() => setViewingBill(null)} className="p-2 hover:bg-gray-200 rounded-full transition-colors">
+              <ArrowLeft className="w-6 h-6" />
+            </button>
+            <div className="flex gap-2">
+              <button onClick={handleWhatsAppClick} className="p-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition-colors" title="Send via WhatsApp">
+                <MessageCircle className="w-5 h-5" />
+              </button>
+              <button onClick={handlePrint} className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors" title="Print Bill">
+                <Printer className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Bill Content */}
+          <div className="text-center mb-6 border-b border-dashed border-gray-400 pb-4">
+            <h1 className="text-2xl font-bold m-0">NEON NEXUS</h1>
+            <p className="text-sm m-1">Gaming Cafe & Lounge</p>
+            <p className="text-sm m-1">Date: {new Date().toLocaleString()}</p>
+          </div>
+          
+          <div className="flex justify-between my-2 text-sm"><span>Customer:</span> <span>{viewingBill.customerName}</span></div>
+          {viewingBill.stationName && (
+            <div className="flex justify-between my-2 text-sm"><span>Station:</span> <span>{viewingBill.stationName} ({viewingBill.durationMinutes} mins)</span></div>
+          )}
+          
+          <div className="border-t border-dashed border-gray-400 my-4"></div>
+          
+          <table className="w-full text-left border-collapse mt-2 text-sm">
+            <thead>
+              <tr>
+                <th className="border-b border-black py-1">Item</th>
+                <th className="border-b border-black py-1 text-right">Qty</th>
+                <th className="border-b border-black py-1 text-right">Price</th>
+                <th className="border-b border-black py-1 text-right">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {viewingBill.gamingCharge > 0 && (
+                <tr>
+                  <td className="py-1">Gaming Charge</td>
+                  <td className="py-1 text-right">-</td>
+                  <td className="py-1 text-right">-</td>
+                  <td className="py-1 text-right">₹{viewingBill.gamingCharge.toFixed(2)}</td>
+                </tr>
+              )}
+              {viewingBill.snacks.map((s, idx) => (
+                <tr key={idx}>
+                  <td className="py-1">{s.name}</td>
+                  <td className="py-1 text-right">{s.quantity}</td>
+                  <td className="py-1 text-right">₹{s.price}</td>
+                  <td className="py-1 text-right">₹{(s.price * s.quantity).toFixed(2)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          
+          <div className="border-t border-dashed border-gray-400 my-4"></div>
+          
+          <div className="flex justify-between my-1 text-sm"><span>Subtotal:</span> <span>₹{(viewingBill.gamingCharge + snacksTotal).toFixed(2)}</span></div>
+          {discount > 0 && <div className="flex justify-between my-1 text-sm"><span>Member Discount:</span> <span>-₹{discount.toFixed(2)}</span></div>}
+          <div className="flex justify-between my-1 text-sm"><span>GST (5%):</span> <span>₹{tax.toFixed(2)}</span></div>
+          
+          <div className="border-t border-dashed border-gray-400 my-4"></div>
+          
+          <div className="flex justify-between my-2 font-bold text-lg"><span>GRAND TOTAL:</span> <span>₹{grandTotal.toFixed(2)}</span></div>
+          
+          {businessUpiId && (
+            <div className="mt-6 flex flex-col items-center justify-center">
+              <p className="text-xs mb-2 font-bold">Scan to Pay via UPI</p>
+              <QRCodeSVG value={upiUrl} size={120} />
+              <p className="text-xs mt-2 text-gray-500">{businessUpiId}</p>
+            </div>
+          )}
+
+          <div className="text-center mt-8 text-sm">
+            <p>Thank you for playing!</p>
+            <p>See you in the cyber grid.</p>
+          </div>
+        </div>
+
+        {/* WhatsApp Phone Number Modal */}
+        {isWhatsAppModalOpen && (
+          <div className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center z-[60] p-4">
+            <div className="bg-[var(--color-cyber-card)] border border-[var(--color-cyber-cyan)] p-6 rounded-lg max-w-sm w-full neon-border-cyan">
+              <h3 className="text-xl font-orbitron text-white mb-4 flex items-center gap-2">
+                <MessageCircle className="text-green-500" /> WhatsApp Bill
+              </h3>
+              <p className="text-gray-400 text-sm mb-4">
+                Enter the customer's WhatsApp number (with country code, e.g., 919876543210).
+              </p>
+              <input 
+                type="tel" 
+                value={whatsappPhone}
+                onChange={(e) => setWhatsappPhone(e.target.value)}
+                placeholder="919876543210"
+                className="w-full bg-gray-900 border border-gray-700 rounded p-3 text-white focus:border-[var(--color-cyber-cyan)] outline-none mb-6"
+                autoFocus
+              />
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => setIsWhatsAppModalOpen(false)}
+                  className="flex-1 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={sendWhatsApp}
+                  disabled={!whatsappPhone}
+                  className="flex-1 py-2 bg-green-500 hover:bg-green-600 text-white rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Send
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
-    <div className="flex h-screen overflow-hidden scanlines">
+    <div className="flex h-screen overflow-hidden scanlines flex-col md:flex-row">
+      {/* Mobile Header */}
+      <div className="md:hidden bg-[var(--color-cyber-dark)] border-b border-gray-800 p-4 flex items-center justify-between relative z-20">
+        <h1 className="text-xl font-orbitron font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-[var(--color-cyber-cyan)] to-[var(--color-cyber-magenta)]">
+          NEON NEXUS
+        </h1>
+        <button 
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="text-gray-400 hover:text-white transition-colors"
+        >
+          {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+        </button>
+      </div>
+
       {/* Sidebar */}
-      <div className="w-64 bg-[var(--color-cyber-dark)] border-r border-gray-800 flex flex-col relative z-10">
-        <div className="p-6 border-b border-gray-800">
+      <div className={`
+        ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} 
+        md:translate-x-0 
+        fixed md:relative top-[69px] md:top-0 left-0 w-64 h-[calc(100vh-69px)] md:h-screen 
+        bg-[var(--color-cyber-dark)] border-r border-gray-800 flex flex-col z-20 transition-transform duration-300 ease-in-out
+      `}>
+        <div className="hidden md:block p-6 border-b border-gray-800">
           <h1 className="text-2xl font-orbitron font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-[var(--color-cyber-cyan)] to-[var(--color-cyber-magenta)]">
             NEON NEXUS
           </h1>
@@ -1131,7 +1261,10 @@ export default function App() {
             return (
               <button
                 key={item.id}
-                onClick={() => setActiveTab(item.id)}
+                onClick={() => {
+                  setActiveTab(item.id);
+                  setIsMobileMenuOpen(false);
+                }}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-300 font-orbitron uppercase text-sm tracking-wider
                   ${isActive 
                     ? `bg-[var(--color-cyber-${item.color})]/10 text-[var(--color-cyber-${item.color})] border border-[var(--color-cyber-${item.color})]/50 neon-border-${item.color}` 
@@ -1152,8 +1285,16 @@ export default function App() {
         </div>
       </div>
 
+      {/* Overlay for mobile */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-10 md:hidden backdrop-blur-sm"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
       {/* Main Content */}
-      <div className="flex-1 overflow-y-auto relative z-10 p-8">
+      <div className="flex-1 overflow-y-auto relative z-0 p-4 md:p-8">
         {activeTab === 'dashboard' && renderDashboard()}
         {activeTab === 'sessions' && renderSessions()}
         {activeTab === 'billing' && renderBilling()}
@@ -1162,6 +1303,9 @@ export default function App() {
         {activeTab === 'history' && renderHistory()}
         {activeTab === 'settings' && renderSettings()}
       </div>
+
+      {/* Bill Modal (Full Screen) */}
+      {renderBillModal()}
 
       {/* Modals */}
       {isStartSessionModalOpen && (

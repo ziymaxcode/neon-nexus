@@ -6,6 +6,13 @@ coverage/
 *.log
 .env*
 !.env.example
-dist-electron/
+# dist-electron/
+# *.exe
+# *.asar
+# Build outputs
+*.apk
 *.exe
-*.asar
+*.dmg
+*.AppImage
+dist-electron/
+NeonNexusMobile-v1.0.0.apk

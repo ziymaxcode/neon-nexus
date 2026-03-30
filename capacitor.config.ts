@@ -2,7 +2,7 @@ import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.cybercafe.manager',
-  appName: 'Cyber Cafe Manager',
+  appName: 'Neon Nexus',
   webDir: 'dist',
   bundledWebRuntime: false
 };
