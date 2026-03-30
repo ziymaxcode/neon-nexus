@@ -1,0 +1,255 @@
+01a96d89cf3a8f17b0f8a8b61d0a7f87a593ba41
+01df5cdc638ac437a5a7f93f406b644f581e906f
+055416835398351d88a191c150cfce6a6bcddfa3
+0d791af7d837709bf3a6a8e57c149e20b8465966
+2c280a34732e34f7cae793d33e81180df4c66936
+642af9d346dc52b7cfbadc59e1032571033ed2d9
+6d7caf39723afae4a5b99bf2f5a587df176c76b4
+709f31c91b0ce79ba0d2e690ba414268fa8f794c
+8fa0fc35f44a2e0d849497c077e155b785193120
+c6bc0dfe2ee0db0416a6516b8ffff57402773b15
+f1c2baadcc829a1b474f5472d02deffc26b5cf40
+11803d26c180c6ac756c2f1b4b591611f93c6309 
+201394fb380159a443788be2ca3da0fd540da73b 
+253bd61ba20abbc72ddafdefb9dbd01053c8a6c4 
+3e9cf11b7e06bba9b2073d41ae0a4fca17cd6b75 
+4e1e162c5f0e409fba93418ed4e988613a8fc853 
+63dff5f3e37f2402d2223c123dc159c6a4479c32 
+a4544b840c6e7c638dedd6f4e1a49ed503207350 
+a686ef754a8df8f4e18001a9b034c31a264fdb4e 
+c28835d61479d86c6308e0571f2261d5ab97e079 
+ca66796690f4cbb46957963fea4f9acd264c6b7d 
+fa0a6ed3d721359c27090adba91068cba332ed6c 
+7a550fe79a56f6953f6afc76b0a10864d8956e25 .env.example
+5a86d2a8aeff6b6a27008e3e5f15000b27897f78 .gitignore
+e63f1a968b50d508c950d90d91f55ee99e843c5d android
+48354a3dfc4ad41c5c7af1451315d335cda7d611 android/.gitignore
+7fcea3e2c2d141d30e3c3e6da6c8e4cb8a2abbb3 android/app
+043df802a29f1f386a23cba600c84be8eee2a0c6 android/app/.gitignore
+114fd17f9a2ed6b0e259f6d9ecd295e8a868cf4c android/app/build.gradle
+bbfb44fad11c913927ea1a9851a85b82bbd9814a android/app/capacitor.build.gradle
+f1b424510da51fd82143bc74a0a801ae5a1e2fcd android/app/proguard-rules.pro
+dfbe3eb96ba19baf0c898e45b90644d5ff3102ad android/app/src
+a15b891550adb46325be9c466d3f0fa8bc0d2759 android/app/src/androidTest
+24640ecfb026be3c9f6e492af3e1ccf553694af9 android/app/src/androidTest/java
+67d169f273d184cf9fb97018e0461eec2f5d4957 android/app/src/androidTest/java/com
+8613baeecfa4104423a4a3a698bf933eeeafe3e1 android/app/src/androidTest/java/com/getcapacitor
+ba5fb63d8b2e33bf269bfeac1ef790925e7d4d7a android/app/src/androidTest/java/com/getcapacitor/myapp
+f2c2217efa5a746f23ea722450a40fe0ca3db099 android/app/src/androidTest/java/com/getcapacitor/myapp/ExampleInstrumentedTest.java
+fcf230215d51c16d472beb53cf8e16dde1ee54e2 android/app/src/main
+b06ddbfd891617511435188b2652da4f5ebe8e61 android/app/src/main/AndroidManifest.xml
+e37721c64e0a977e2c584df2f8731b876e4df471 android/app/src/main/assets
+5103a3c2fbcbf133c827ff7fa14c3530741953d7 android/app/src/main/assets/capacitor.config.json
+fe51488c7066f6687ef680d6bfaa4f7768ef205c android/app/src/main/assets/capacitor.plugins.json
+3a0011fe7d3323be9831bc52cbc461609bc4ecca android/app/src/main/assets/public
+152df0edced6aee7cd47b41c2c629f6ab7732a04 android/app/src/main/assets/public/assets
+f4794f808c5d191986442c7b163eec0d1ab76fa4 android/app/src/main/assets/public/assets/index-Bt_XQ3ZY.js
+2994dab8b3bc47038108a42e0fa9fca42ab97846 android/app/src/main/assets/public/assets/index-Bxx7drEm.css
+e69de29bb2d1d6434b8b29ae775ad8c2e48c5391 android/app/src/main/assets/public/cordova.js
+c38b503131044d2f507e2d5b0a7fd6a74d4e956e android/app/src/main/assets/public/index.html
+3c64aea19a168c0bad1538069ec6389576b6d37f android/app/src/main/java
+92780f976d236e1505edc498c759dcdbb2bdc86b android/app/src/main/java/com
+b1c90550c8cf17fadc1280de278b8e1787b736d2 android/app/src/main/java/com/cybercafe
+b48c6e96553e59668fa4cdb3284827264c37bf23 android/app/src/main/java/com/cybercafe/manager
+4e77ddc5100c43f187e6d77ece95e8148d647ad3 android/app/src/main/java/com/cybercafe/manager/MainActivity.java
+974f872d030a3ed747da4f88ef9971ccd7d6dc5c android/app/src/main/res
+6a810ae870561c1c48bbd68df358410505292af4 android/app/src/main/res/drawable
+d5fccc538c179838bfdce779c26eebb4fa0b5ce9 android/app/src/main/res/drawable/ic_launcher_background.xml
+b4076cf3c91d2a0db1e86eb6cc0b4d197df0265e android/app/src/main/res/drawable-land-hdpi
+0081cd13948b138bfda7ed8156ec5c7bf74e18f0 android/app/src/main/res/drawable-land-hdpi/splash.png
+1c2dec1bf925a1e3c50747e09310ecc00690e619 android/app/src/main/res/drawable-land-mdpi
+9c3d6e37dd93c541ea72cb23b476955f0039a5a0 android/app/src/main/res/drawable-land-mdpi/splash.png
+e7b353494d25ecb49982c4682f0474a05055f22b android/app/src/main/res/drawable-land-xhdpi
+f0a0d0cf3ea90f8cbbd2a0e63bf0bc3af1ef0577 android/app/src/main/res/drawable-land-xhdpi/splash.png
+091eef2497fceb909fe924e20901377f2cb65f1e android/app/src/main/res/drawable-land-xxhdpi
+20a20f832bf42b476c890a045e25d87bb4fb6176 android/app/src/main/res/drawable-land-xxhdpi/splash.png
+0aaa863bea527fed32c97f47af2827d50e89c9f9 android/app/src/main/res/drawable-land-xxxhdpi
+ac1f98aa2786219bf3a5c31737f611de093cb965 android/app/src/main/res/drawable-land-xxxhdpi/splash.png
+590e5b7ad508426b67753e1c9b287458724ae1d2 android/app/src/main/res/drawable-port-hdpi
+b188c358956b547cd1077c975fcdf661a43400d8 android/app/src/main/res/drawable-port-hdpi/splash.png
+2d2fe156aa7a5805526ba938ef749a960e056404 android/app/src/main/res/drawable-port-mdpi
+88a4c4a35d55343716023e6f751b3cd03dab7f34 android/app/src/main/res/drawable-port-mdpi/splash.png
+eede4d68272421f1dc2f4eee125e6201a9f727d0 android/app/src/main/res/drawable-port-xhdpi
+751aed33d7bc6183e0ea44f3dead6e37cfff3267 android/app/src/main/res/drawable-port-xhdpi/splash.png
+5b43665c7a3566abcf0b55af2e5d672a30a79e97 android/app/src/main/res/drawable-port-xxhdpi
+65fec2ad169e6a5b143b624bc821134f4cbca6b3 android/app/src/main/res/drawable-port-xxhdpi/splash.png
+d1248a3953cad4e3825dc6484ad043b9ffb0171f android/app/src/main/res/drawable-port-xxxhdpi
+30108f41634c0712e843f103d0e6329f516e4185 android/app/src/main/res/drawable-port-xxxhdpi/splash.png
+1663a4baafe27f58a8cc9c7218d8d35a53ce1f20 android/app/src/main/res/drawable-v24
+c7bd21dbd86990cde81fea8abd3bf904b4546749 android/app/src/main/res/drawable-v24/ic_launcher_foreground.xml
+5c4f20040de2ca73512fd12e02392e19e2f1eb38 android/app/src/main/res/layout
+b5ad1387011da0894cc1d91f44f3bd77f5403f5d android/app/src/main/res/layout/activity_main.xml
+602bdf4f2112ad81fdf97f4847b0284a9fa3a723 android/app/src/main/res/mipmap-anydpi-v26
+036d09bc5fd523323794379703c4a111d1e28a04 android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
+9ca256b651e9d2443f85fc1b48cacfa758b3d137 android/app/src/main/res/mipmap-hdpi
+45c010e76e9de43d0852d2c0044497df758160d1 android/app/src/main/res/mipmap-hdpi/ic_launcher.png
+0bed7b9d354e0f0045207d31717084a21717b5b5 android/app/src/main/res/mipmap-hdpi/ic_launcher_foreground.png
+c60612e30fe3b22b21db04f1bbe0164a28cf6bd3 android/app/src/main/res/mipmap-hdpi/ic_launcher_round.png
+c9d82ebe87d00993e5e39650de8a3469edf0adbf android/app/src/main/res/mipmap-mdpi
+38f4f6e1fa4477b1621643f891fccdd0bebaabf5 android/app/src/main/res/mipmap-mdpi/ic_launcher.png
+afc11f39f7d1b7a17adbe7b9cde4af418ea042a6 android/app/src/main/res/mipmap-mdpi/ic_launcher_foreground.png
+6541dfe21e2db06ed68a97ca1e1952ae06ccd450 android/app/src/main/res/mipmap-mdpi/ic_launcher_round.png
+dd948eed27c1b108dd14e9aefaf9274a5c07b32c android/app/src/main/res/mipmap-xhdpi
+a8ce97b4cb9d09d22cbcdde274a07112f928bcf2 android/app/src/main/res/mipmap-xhdpi/ic_launcher.png
+c0963d656d450716f046045c281f20e3d1bdad5b android/app/src/main/res/mipmap-xhdpi/ic_launcher_foreground.png
+9613bd26f665e1da77480b13eca43d7d44cda2b2 android/app/src/main/res/mipmap-xhdpi/ic_launcher_round.png
+281779c335d1391678abed7b18c93778f6dcacce android/app/src/main/res/mipmap-xxhdpi
+454110393a3ae174f0c343f771408d22e679ac72 android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png
+f4ffb9c44b527128f6f4a4fc7d609d660041449e android/app/src/main/res/mipmap-xxhdpi/ic_launcher_foreground.png
+9c4ed3621ceda0428d30a217befaa8e1c8b6a7c3 android/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png
+bb4a20de2cf5a13eb47da2bfff07e19f31c44984 android/app/src/main/res/mipmap-xxxhdpi
+be7139775395f0498b781a17af866007dc9d5140 android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
+f2609d937dff8084850862926b03aebffa79f3dc android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png
+e53596fe72ccde9ad338a23cf631238bf466952e android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png
+cba935eb731c7edf8a7f2435f546d0c0d5985df7 android/app/src/main/res/values
+c5d5899fdf0a1b144bf341b29e0c66ba50bbcedd android/app/src/main/res/values/ic_launcher_background.xml
+d77095a0d7f388cc103ce211851545f22e6182fe android/app/src/main/res/values/strings.xml
+be874e54a4a64059503427dbefeabcee2989549d android/app/src/main/res/values/styles.xml
+9eab9504934c2a8d1f9ec75e3b2d90758f499cec android/app/src/main/res/xml
+1b1b0e0dcacc0bfb732885c069993b3e2ddbafba android/app/src/main/res/xml/config.xml
+bd0c4d80d0473953333d5adb0d38ac713d0d648b android/app/src/main/res/xml/file_paths.xml
+2f991ebd3b352009d8f89ddf1c64badb0382d561 android/app/src/test
+6c672dfea712d4f88080a6d48c3f0e8e7384296e android/app/src/test/java
+92c1c79c7cb6a399402ddc5d7e89a7c84ec53f6b android/app/src/test/java/com
+862f3ade2e7aa1672ec697c8af2922e9133f5bf3 android/app/src/test/java/com/getcapacitor
+dd6dd1ce478dfdd0aafcf77d7595cb3f36439ca2 android/app/src/test/java/com/getcapacitor/myapp
+0297327842dfa194b316aec9730bb3c7349b7282 android/app/src/test/java/com/getcapacitor/myapp/ExampleUnitTest.java
+f8f0e43b6d57dca414ad5c0683621397a4ed3c72 android/build.gradle
+9a5fa872e75f3ac9cb82951943ec4ce0ba50005e android/capacitor.settings.gradle
+74e1283b0d2cc3d841fa1276d1ba1b7de83cd9ba android/capacitor-cordova-android-plugins
+b2e25ddd6e7b2b67fa53cdc7d8204ebf2f26a8a0 android/capacitor-cordova-android-plugins/build.gradle
+b806d8ad6586478426457d95084f24fdd004b6b2 android/capacitor-cordova-android-plugins/cordova.variables.gradle
+3d05d436ff906cea1c5d95cfcb8cc5dbea9b98c7 android/capacitor-cordova-android-plugins/src
+f09a27e4ee6b0d27195410ba6eb03b35e9f3e805 android/capacitor-cordova-android-plugins/src/main
+cb9c8aa354a4035d3430a421f53907fe05927006 android/capacitor-cordova-android-plugins/src/main/AndroidManifest.xml
+d564d0bc3dd917926892c55e3706cc116d5b165e android/capacitor-cordova-android-plugins/src/main/java
+5bfad2b3f8e483b6b173d8aaff19597e84626f15 android/capacitor-cordova-android-plugins/src/main/res
+8b137891791fe96927ad78e64b0aad7bded08bdc android/capacitor-cordova-android-plugins/src/main/res/.gitkeep
+23340eb7b6db6706870787bb1664fe4c1a4ec58a android/gradle
+2e87c52f83c298527b1d1c747d496227dc0c6e71 android/gradle.properties
+fa8b2554cebb96dc079a9fa6eb0fba04d67c1b79 android/gradle/wrapper
+7c9efe49ea98744186810ad1f8b38787c3b9b4f6 android/gradle/wrapper/gradle-wrapper.jar
+7705927e949fdfbe2bfa90ef9d397e6057ccf104 android/gradle/wrapper/gradle-wrapper.properties
+23d15a9367071145e9c79bb4ddf879d1fbe78b5d android/gradlew
+5eed7ee8452842305a18a4eb967442683808226a android/gradlew.bat
+3b4431d7724bd82d1aeb2ce59e7a0504b8869f81 android/settings.gradle
+ee4ba41c46f546910a153b2938cad859cd7cd86e android/variables.gradle
+4998839eb030799b3f865209d9c034206c4e1014 capacitor.config.ts
+a044b005ad31500938ba6979554b975fb28d55b5 dist-electron
+23dc3b066da38e29c80a6bd965416e9bb007417d dist-electron/builder-debug.yml
+9de13b67cdf315361c5e898ed12912cabc139d35 dist-electron/builder-effective-config.yaml
+c14676a34775267f7e141def11a1585b38cc2959 dist-electron/Cyber Cafe Manager Setup 0.0.0.exe
+629758ecb088e1c3087196bab82061841efe5a7e dist-electron/Cyber Cafe Manager Setup 0.0.0.exe.blockmap
+b6c74beb0a72233a4cd3bc9eafbbcbe8cb2e88af dist-electron/latest.yml
+b954d33c16ae50f3b04fcc3b980c977794b76f10 dist-electron/win-unpacked
+ea304a588ec1b6de2805127472256907cbd1230f dist-electron/win-unpacked/chrome_100_percent.pak
+a82dd036a2c8663ce87110271fb5d1e7607fceb3 dist-electron/win-unpacked/chrome_200_percent.pak
+911d6501b6c857002eecd624b45e72868b17f8d7 dist-electron/win-unpacked/Cyber Cafe Manager.exe
+7af054ffea4fc74d58a5a2fcb659e646c97a1f71 dist-electron/win-unpacked/d3dcompiler_47.dll
+3e6320d13720ebeb4275a4b176e5755d18b434be dist-electron/win-unpacked/dxcompiler.dll
+02d2be94950a2582bd3f4a879d2dce96a1a13348 dist-electron/win-unpacked/dxil.dll
+8fa2509c9f0d386c0a405f76578bda4d5298c42a dist-electron/win-unpacked/ffmpeg.dll
+d1a12cb93065157498a11ff5f4b9a6501ee22506 dist-electron/win-unpacked/icudtl.dat
+02743577980c2990b633cc84656c6441a3935c83 dist-electron/win-unpacked/libEGL.dll
+ec69da6c5b52eab372fc819eb6546cb1bb999c29 dist-electron/win-unpacked/libGLESv2.dll
+536d54efc3fd36ff7e079f82ce55f82c887758cd dist-electron/win-unpacked/LICENSE.electron.txt
+1aa1402d7099596dc8a57141b7a390b50f2011e9 dist-electron/win-unpacked/LICENSES.chromium.html
+d3202400ecab9d9447117ba595eb12c58ee44cd2 dist-electron/win-unpacked/locales
+30162d3a377670014eee742bc8fd9b24ed7cbae7 dist-electron/win-unpacked/locales/af.pak
+09cc745162eca3888f9dd2776d91d689b6217ea0 dist-electron/win-unpacked/locales/am.pak
+2aff927819e11b5db1e0f013d5c9a979ec648c4d dist-electron/win-unpacked/locales/ar.pak
+1f1a879ea78b221fb4123dd216da37482a48be6b dist-electron/win-unpacked/locales/bg.pak
+da7a8b21590bb0284ca139092ba3c7202db5a1dc dist-electron/win-unpacked/locales/bn.pak
+5d15e42de0675bac327cc4e97e9fecc82213d1eb dist-electron/win-unpacked/locales/ca.pak
+6f04bd687368b1b9b8b0d1180b5224633a68a507 dist-electron/win-unpacked/locales/cs.pak
+979c7e08f7492bc6472972dbf406215fb55d474e dist-electron/win-unpacked/locales/da.pak
+cfaeba34696046a3610e8b24a9e9e5ee41710f27 dist-electron/win-unpacked/locales/de.pak
+12f2099d75a04755ff307d8d5aa9c2ba79d2e75c dist-electron/win-unpacked/locales/el.pak
+2823fd466d5a73f74cf5d29e24ca7d9f23dd8bc1 dist-electron/win-unpacked/locales/en-GB.pak
+baf64ee6b46f70296dd09f014bfa890d18b0fc9e dist-electron/win-unpacked/locales/en-US.pak
+041e6c8157e492cd9b9f2882e8af3f6ce490d637 dist-electron/win-unpacked/locales/es.pak
+68c0a06ca979d24810289011d921cdaa412c856e dist-electron/win-unpacked/locales/es-419.pak
+de137f1822b1f7d738ecf5d3ae6a19ee153a09db dist-electron/win-unpacked/locales/et.pak
+a8639c33cc45a7b44bd7f52ffb64722522305bb9 dist-electron/win-unpacked/locales/fa.pak
+670c90d88dc084df15635031eb763dc9c176db71 dist-electron/win-unpacked/locales/fi.pak
+ddc8e2d1986e6ddd78a8ae437820a40c07e77bce dist-electron/win-unpacked/locales/fil.pak
+d508430de0f29528d854ab88d6d11445ff21f7cb dist-electron/win-unpacked/locales/fr.pak
+445fdc78e8cd273f8820d9f1dbb548257f44edce dist-electron/win-unpacked/locales/gu.pak
+a7cb58f173dedb6c21070db4371cbc1de2a804ed dist-electron/win-unpacked/locales/he.pak
+ac4938a6c711d5825c862492810c42898940a0a9 dist-electron/win-unpacked/locales/hi.pak
+f2cd4eae6313226e20ab5ea6f384894d519a4d71 dist-electron/win-unpacked/locales/hr.pak
+1da109810a94945884e36ae5c1586c3ad4118f37 dist-electron/win-unpacked/locales/hu.pak
+e1173ae49b33cc4046c360c917e818fbd87296f9 dist-electron/win-unpacked/locales/id.pak
+dbcf09bad4b319172397dd347c57729f6ba667c0 dist-electron/win-unpacked/locales/it.pak
+afbb1cb9aac447939fd489cb7d4850bd05c8faa2 dist-electron/win-unpacked/locales/ja.pak
+292a6f5acaa628ec31655db976ae05b26b537695 dist-electron/win-unpacked/locales/kn.pak
+d79283a05e0a2c57dfcb32639f589fc69a90c3bd dist-electron/win-unpacked/locales/ko.pak
+6856fac0b8cb8856c1d4676cbc37740ed07d1a6a dist-electron/win-unpacked/locales/lt.pak
+a3bf47a584b0085707195e415c9d61d16e1ab56f dist-electron/win-unpacked/locales/lv.pak
+3b97a2c3a1379da325041436974c5120e80b3d85 dist-electron/win-unpacked/locales/ml.pak
+0b80238f5b9343ccafd9d88c9363d001642d3d3a dist-electron/win-unpacked/locales/mr.pak
+89b9a0e610c8c1277ca92ee219fd17cdc2a7a0d9 dist-electron/win-unpacked/locales/ms.pak
+a125bd95f1d04e6cba552b9cef57e49d30d4f772 dist-electron/win-unpacked/locales/nb.pak
+45432462ab3cb81e93af8b67a81b887261486ffa dist-electron/win-unpacked/locales/nl.pak
+daa73a85823c807f443d5a44b6a7a799f6b3487b dist-electron/win-unpacked/locales/pl.pak
+0b4474b02237a47afe0768f35c8d3b24f36d9f8c dist-electron/win-unpacked/locales/pt-BR.pak
+f8e06ecca080b25832ca3e7aad7d5d7895344308 dist-electron/win-unpacked/locales/pt-PT.pak
+7b3176bba3d8a16caa07251497d1194173130a1a dist-electron/win-unpacked/locales/ro.pak
+8e4770a8205f42c1aed6b257562ccf694a81cccf dist-electron/win-unpacked/locales/ru.pak
+c8f24ded41083afd65ffc2c10243d242592d163d dist-electron/win-unpacked/locales/sk.pak
+15ea42050b3a0f2936c8f92365ac3337f8956dbc dist-electron/win-unpacked/locales/sl.pak
+a19c97921518dbfdf6233fe2582a0c1c7a76b81c dist-electron/win-unpacked/locales/sr.pak
+849d8d39c04beae9f2a1f75e8ebca0c2ea444c38 dist-electron/win-unpacked/locales/sv.pak
+7ac8e83b357c25f6ce93dd924d47cd1dcc0fc225 dist-electron/win-unpacked/locales/sw.pak
+6d41d1d89b98044b7401471f07c1aba5ccb30028 dist-electron/win-unpacked/locales/ta.pak
+672b376785cb159bccd7274d3cf907f75149d915 dist-electron/win-unpacked/locales/te.pak
+0d7b70a4492d6d6edfea6424d7c3d3dba8bd8c5f dist-electron/win-unpacked/locales/th.pak
+194874c723b7c8cc62f2e4a6d86b8d4ff4141bcc dist-electron/win-unpacked/locales/tr.pak
+a6570922341c4fdf34f33ae23ea527a9554f6356 dist-electron/win-unpacked/locales/uk.pak
+41427e170c21343e751f8cedc92254b9d4154fe7 dist-electron/win-unpacked/locales/ur.pak
+7f0c65c8fe29e770b982614671e2894e988a5755 dist-electron/win-unpacked/locales/vi.pak
+70fd91a9eab0329d6c9eb53b79696cbee91952a7 dist-electron/win-unpacked/locales/zh-CN.pak
+b9b28093c8629086a6d0f16dde891b674247232c dist-electron/win-unpacked/locales/zh-TW.pak
+fa2aec636e4035aa2c6d3c1685e8c8a01a52dafe dist-electron/win-unpacked/resources
+f474b0962246018abdabc5dda090d49edfc837a0 dist-electron/win-unpacked/resources.pak
+b8559dbadbb33437805b4313e7e8bb4397b6e057 dist-electron/win-unpacked/resources/app.asar
+b3e3e0b8dcb8710ee8725d79b5c95d3552d66807 dist-electron/win-unpacked/resources/app-update.yml
+66a74c0d0bbabfc0cbd83ad7233a642c495daa48 dist-electron/win-unpacked/resources/elevate.exe
+c816456328d739afcd061aaa5d8e0dade14a9b2d dist-electron/win-unpacked/snapshot_blob.bin
+6f2e82f72a39d0ab4fc4664bb3f45b00b1cc98bc dist-electron/win-unpacked/v8_context_snapshot.bin
+66f4bde1e5ab2806ce1a7748e3df6eac83ea9124 dist-electron/win-unpacked/vk_swiftshader.dll
+525fbc5a960d67da25bd416c19a35043313e9486 dist-electron/win-unpacked/vk_swiftshader_icd.json
+7bb3d94fb1a8be15d2eb63b446d3156854a87a22 dist-electron/win-unpacked/vulkan-1.dll
+f8203e16d6ee59c8c81ec58d26a749757eb7709a electron
+6f4f5d4873322b375ce3b02624cbf80b9921ffbe electron/main.cjs
+21dfe6908a2d8e32a249152161fd31127ba93f7b index.html
+c5f9fbace8a51447d18d3798a186ffdd4fb50623 metadata.json
+0cdd3e8a0dd0c9205188fee4315814c5314bd862 package.json
+2ac8a406ee9c1573bf6404f7fc31d789d76a4052 package.json
+3a21a273dba046d85043d69a92bfbbe37e089069 package.json
+be96b5d8bdc8947e56634de6d329dc7a32ba6d6b package.json
+8d648c458799fbb27224b7782292879d686d8401 package-lock.json
+a7b3a6eeeb31acafb1aa2b2d1e6bcf75e23b3ec6 package-lock.json
+d1219e029230615a1d90ac0e848a8b981da51a89 public
+b32b66473d5a3947a89eaa0cd54caef9e0cda9ef public/sql-wasm.wasm
+2241000802112f1409325030f8b587152b14e459 README.md
+2b0fa7cb46c299b09cb8ed466d2f57430726f3d0 README.md
+3247fe94cdd2304e9c87ffe035332990568276d8 README.md
+477fbb43ca5d8adec5f35986ea1d9a2467f9a4a5 README.md
+0ee307f6bb9d19bc46eb4cc574aedcaab491898e src
+3b938bf6ce8b82824d85303b014d089498b8801b src
+7b7a87c4631cdb7c4e8d9d7bc7fbb14559621ca1 src
+896ddddf9c530550df9371176009b8f99a345009 src
+90a8b0061d59269bf0489cf5719da7def68b1160 src
+b82f678caca97460daef773bd6d98e8a4b6536fc src
+51a22e890c89a12ef457ad66f94c6875fb9a1052 src/App.tsx
+9753e688f8b6cffb77f26a8d22a0600002baef51 src/App.tsx
+9cafac419e46a91506dc285db504de8e7c0b12a4 src/App.tsx
+a576771fcbf855a55dafb1ed29e7a9bd95c1716c src/App.tsx
+b13c361c020e18160009b904f9fa9e882f2b6712 src/App.tsx
+e9e256045ac3f974b12a34262d70fabd88553df7 src/App.tsx
+4543f43ae80a0710bfd9e3c411e934ae03021ef9 src/index.css
+080dac371e6d8ba952c0c9a6f668e7195d77091e src/main.tsx
+d88f175b08822f946e8333471fd7fec70ffffff2 tsconfig.json
+0506f1b683ccb9cb79b1e1b0e485d18e8926845c vite.config.ts
+f0fcb4e19069d2f253f2d85d5aabfb0f3c51e81e vite.config.ts

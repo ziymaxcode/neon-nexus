@@ -18,7 +18,7 @@
   },
   "build": {
     "appId": "com.cybercafe.manager",
-    "productName": "Cyber Cafe Manager",
+    "productName": "Neon Nexus",
     "directories": {
       "output": "dist-electron"
     },
@@ -30,6 +30,7 @@
       "electron/**/*"
     ],
     "win": {
+      "icon":"electron/assets/nlogo.ico",
       "target": "nsis"
     },
     "mac": {
